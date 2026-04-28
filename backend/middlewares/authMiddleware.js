@@ -11,7 +11,7 @@ const extractToken = (req) => {
 // ── Admin / Staff middleware ──────────────────────────────────────────────────
 export const protect = async (req, res, next) => {
   try {
-    const token = extractToken(req);
+    const token = extractToken(req)
 
     if (!token) {
       return res.status(401).json({ success: false, message: 'Not authorized. No token provided.' });
