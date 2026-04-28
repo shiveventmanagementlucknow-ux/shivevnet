@@ -27,7 +27,7 @@ export default function Footer() {
             {socialItems.length > 0 && (
               <div className="flex gap-3 mt-6">
                 {socialItems.map((item, idx) => (
-                  <a key={item.key} href={item.url} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-600 hover:text-white flex items-center justify-center text-gray-400 text-xs transition-all duration-300 animate-fadeInUp hover:scale-110 hover:-translate-y-1" style={{ animationDelay: `${idx * 0.1}s` }}>{item.label}</a>
+                  <a key={item.key} href={item.url} target="_blank" rel="noreferrer" className="w-9 h-9 rounded-xl bg-white/10 hover:bg-primary-600 hover:text-white flex items-center justify-center text-gray-400 text-xs transition-all duration-200 animate-fadeInUp hover:scale-105" style={{ animationDelay: `${idx * 0.1}s` }}>{item.label}</a>
                 ))}
               </div>
             )}

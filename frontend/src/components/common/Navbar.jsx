@@ -23,15 +23,25 @@ export default function Navbar() {
   const isHome = pathname === '/';
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    let ticking = false;
+    const updateScroll = () => {
+      setScrolled(window.scrollY > 20);
+      ticking = false;
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(updateScroll);
+        ticking = true;
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   useEffect(() => setOpen(false), [pathname]);
 
   const navBg = scrolled || !isHome
-    ? 'bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100'
+    ? 'bg-white/95 backdrop-blur-sm shadow-sm border-b border-gray-100'
     : 'bg-transparent';
   const textColor = scrolled || !isHome ? 'text-gray-700' : 'text-white';
   const logoColor = scrolled || !isHome ? 'text-gray-900' : 'text-white';
@@ -59,8 +69,8 @@ export default function Navbar() {
                 key={link.to}
                 to={link.to}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 ${pathname === link.to
-                    ? 'text-primary-600 bg-primary-50'
-                    : `${textColor} hover:text-primary-600 hover:bg-gray-50`
+                  ? 'text-primary-600 bg-primary-50'
+                  : `${textColor} hover:text-primary-600 hover:bg-gray-50`
                   }`}
               >
                 {link.label}
@@ -158,8 +168,8 @@ export default function Navbar() {
               key={link.to}
               to={link.to}
               className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === link.to
-                  ? 'text-primary-600 bg-primary-50'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                ? 'text-primary-600 bg-primary-50'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
             >
               {link.label}

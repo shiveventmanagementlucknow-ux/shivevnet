@@ -11,5 +11,28 @@ export default defineConfig({
         changeOrigin: true,
       }
     }
-  }
+  },
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-ui': ['react-hot-toast', 'react-helmet-async'],
+          'vendor-image': ['browser-image-compression'],
+        },
+      },
+    },
+    sourcemap: false,
+    target: 'esnext',
+    chunkSizeWarningLimit: 1000,
+  },
+  optimization: {
+    minimize: true,
+  },
 });
