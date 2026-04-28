@@ -8,14 +8,14 @@ export default function AdminServices() {
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [form, setForm] = useState({ title: '', icon: '🎉', shortDescription: '', description: '', startingPrice: '', isActive: true, features: '' });
+    const [form, setForm] = useState({ title: '', icon: '🎉', image: '', shortDescription: '', description: '', startingPrice: '', isActive: true, features: '' });
     const [saving, setSaving] = useState(false);
 
     const fetchServices = async () => {
         setLoading(true);
         try {
             const res = await serviceAPI.getAllAdmin();
-            setServices(res.data.data);
+            setServices(Array.isArray(res.data?.data) ? res.data.data : []);
         } catch { toast.error('Failed to load services'); }
         finally { setLoading(false); }
     };
@@ -24,13 +24,13 @@ export default function AdminServices() {
 
     const openCreate = () => {
         setEditing(null);
-        setForm({ title: '', icon: '🎉', shortDescription: '', description: '', startingPrice: '', isActive: true, features: '' });
+        setForm({ title: '', icon: '🎉', image: '', shortDescription: '', description: '', startingPrice: '', isActive: true, features: '' });
         setShowForm(true);
     };
 
     const openEdit = (s) => {
         setEditing(s);
-        setForm({ title: s.title, icon: s.icon || '🎉', shortDescription: s.shortDescription || '', description: s.description || '', startingPrice: s.startingPrice || '', isActive: s.isActive, features: (s.features || []).join('\n') });
+        setForm({ title: s.title, icon: s.icon || '🎉', image: s.image || '', shortDescription: s.shortDescription || '', description: s.description || '', startingPrice: s.startingPrice || '', isActive: s.isActive, features: (s.features || []).join('\n') });
         setShowForm(true);
     };
 
@@ -94,6 +94,7 @@ export default function AdminServices() {
                                 <div><label className="block text-xs text-gray-500 mb-1.5">Icon</label><input value={form.icon} onChange={e => setForm(f => ({ ...f, icon: e.target.value }))} className="input-field text-center text-2xl" maxLength={2} /></div>
                                 <div className="col-span-3"><label className="block text-xs text-gray-500 mb-1.5">Title *</label><input required value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Wedding Planning" className="input-field" /></div>
                             </div>
+                            <div><label className="block text-xs text-gray-500 mb-1.5">Cover Image URL</label><input value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} placeholder="https://example.com/service-bg.jpg" className="input-field" /></div>
                             <div><label className="block text-xs text-gray-500 mb-1.5">Short Description</label><input value={form.shortDescription} onChange={e => setForm(f => ({ ...f, shortDescription: e.target.value }))} placeholder="Brief one-liner" className="input-field" /></div>
                             <div><label className="block text-xs text-gray-500 mb-1.5">Full Description *</label><textarea required rows={4} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Detailed description…" className="input-field resize-none" /></div>
                             <div><label className="block text-xs text-gray-500 mb-1.5">Starting Price (₹)</label><input type="number" value={form.startingPrice} onChange={e => setForm(f => ({ ...f, startingPrice: e.target.value }))} placeholder="50000" className="input-field" /></div>

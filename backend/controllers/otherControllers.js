@@ -126,7 +126,7 @@ export const uploadGalleryImage = async (req, res, next) => {
   try {
     if (!req.file) return res.status(400).json({ success: false, message: 'No image uploaded' });
 
-    const { title, category, description } = req.body;
+    const { title, category, description, mediaType } = req.body;
 
     // Validation
     if (!title || typeof title !== 'string' || title.trim() === '') {
@@ -143,6 +143,7 @@ export const uploadGalleryImage = async (req, res, next) => {
       publicId: req.file.filename,
       category,
       description: description ? String(description).trim() : '',
+      mediaType: mediaType || 'image',
     });
 
     console.log('✅ Gallery image uploaded:', image._id);
@@ -176,6 +177,28 @@ export const deleteGalleryImage = async (req, res, next) => {
     res.json({ success: true, message: 'Image deleted successfully' });
   } catch (error) {
     console.error('Gallery delete error:', error.message);
+    next(error);
+  }
+};
+
+// PATCH /api/gallery/:id (admin) — Update gallery image metadata
+export const updateGalleryImage = async (req, res, next) => {
+  try {
+    const { isFeatured, description, order, title, category } = req.body;
+    const image = await Gallery.findById(req.params.id);
+    if (!image) return res.status(404).json({ success: false, message: 'Image not found' });
+
+    if (typeof isFeatured === 'boolean') image.isFeatured = isFeatured;
+    if (typeof description === 'string') image.description = description.trim();
+    if (typeof order === 'number') image.order = order;
+    if (title && typeof title === 'string') image.title = title.trim();
+    if (category) image.category = category;
+
+    await image.save();
+    console.log('✅ Gallery image updated:', image._id);
+    res.json({ success: true, message: 'Image updated successfully', data: image });
+  } catch (error) {
+    console.error('Gallery update error:', error.message);
     next(error);
   }
 };

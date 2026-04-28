@@ -17,7 +17,7 @@ export default function AdminSettings() {
 
     useEffect(() => {
         settingsAPI.get()
-            .then(r => setForm(r.data.data))
+            .then(r => setForm(r.data?.data || {}))
             .catch(() => toast.error('Failed to load settings'))
             .finally(() => setLoading(false));
     }, []);
@@ -36,11 +36,17 @@ export default function AdminSettings() {
         if (f.size > 5 * 1024 * 1024) return toast.error('Max 5MB');
         setSlideUploading(true);
         try {
-            const compressed = await imageCompression(f, { maxSizeMB: 0.8, maxWidthOrHeight: 1200, useWebWorker: true });
+            const compressed = await imageCompression(f, {
+                maxSizeMB: 5,              // Max quality (Up to 5MB)
+                maxWidthOrHeight: 3840,    // 4K resolution support to prevent pixelation
+                initialQuality: 1,         // 100% origin quality retention
+                useWebWorker: true
+            });
             const data = new FormData();
-            data.append('image', compressed, f.name);
+            data.append('media', compressed, f.name);
             data.append('title', slideForm.title || 'slide');
             data.append('category', 'Other');
+            data.append('mediaType', 'image');
             const res = await galleryAPI.upload(data);
             const imageUrl = res.data.data?.imageUrl || res.data.imageUrl;
             setSlideForm(sf => ({ ...sf, image: imageUrl }));

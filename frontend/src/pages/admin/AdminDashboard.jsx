@@ -38,11 +38,11 @@ export default function AdminDashboard() {
       adminUsersAPI.getStats(),
       adminUsersAPI.getAll({ page: 1, limit: 5 }),
     ]).then(([statsRes, bookingsRes, contactsRes, uStatsRes, uListRes]) => {
-      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data.data);
-      if (bookingsRes.status === 'fulfilled') setBookings(bookingsRes.value.data.data);
+      if (statsRes.status === 'fulfilled') setStats(statsRes.value.data?.data || {});
+      if (bookingsRes.status === 'fulfilled') setBookings(Array.isArray(bookingsRes.value.data?.data) ? bookingsRes.value.data.data : []);
       if (contactsRes.status === 'fulfilled') setUnreadCount(contactsRes.value.data.pagination?.total || 0);
-      if (uStatsRes.status === 'fulfilled') setUserStats(uStatsRes.value.data.data);
-      if (uListRes.status === 'fulfilled') setRecentUsers(uListRes.value.data.data || []);
+      if (uStatsRes.status === 'fulfilled') setUserStats(uStatsRes.value.data?.data || { total: 0, active: 0, thisMonth: 0 });
+      if (uListRes.status === 'fulfilled') setRecentUsers(Array.isArray(uListRes.value.data?.data) ? uListRes.value.data.data : []);
     }).finally(() => setLoading(false));
   }, []);
 

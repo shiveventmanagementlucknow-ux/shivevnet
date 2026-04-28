@@ -101,7 +101,6 @@ export const userProtect = async (req, res, next) => {
 
     // Hard reject admin tokens on client routes
     if (decoded.type !== 'user') {
-      console.warn(`⚠️  Non-user token (type: ${decoded.type}) on client route — IP: ${req.ip}`);
       return res.status(401).json({ success: false, message: 'Invalid token type.' });
     }
 

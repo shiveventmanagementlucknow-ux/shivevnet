@@ -61,13 +61,11 @@ export function ContactPage() {
                                     <p>Contact information will be available soon.</p>
                                 </div>
                             )}
-                            {settings?.whatsapp && (
-                                <a href={`https://wa.me/${settings.whatsapp.replace(/[^0-9]/g, '')}?text=Hi! I'm interested in booking an event.`}
-                                    target="_blank" rel="noreferrer"
-                                    className="flex items-center gap-3 p-5 bg-green-50 border border-green-200 hover:bg-green-100 rounded-2xl text-green-600 font-medium transition-all">
-                                    💬 Chat on WhatsApp
-                                </a>
-                            )}
+                            <a href="https://wa.me/916394352002?text=Hi!%20I'm%20interested%20in%20booking%20an%20event."
+                                target="_blank" rel="noreferrer"
+                                className="flex items-center gap-3 p-5 bg-green-50 border border-green-200 hover:bg-green-100 rounded-2xl text-green-600 font-medium transition-all">
+                                💬 Chat on WhatsApp (+91 6394352002)
+                            </a>
                         </div>
 
                         {/* Form */}

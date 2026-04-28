@@ -11,7 +11,7 @@ export function BlogPage() {
 
     useEffect(() => {
         blogAPI.getAll()
-            .then(r => setBlogs(r.data.data))
+            .then(r => setBlogs(Array.isArray(r.data?.data) ? r.data.data : []))
             .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
@@ -34,13 +34,21 @@ export function BlogPage() {
                     ) : blogs.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {blogs.map(blog => (
-                                <Link key={blog._id} to={`/blog/${blog.slug}`} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:border-primary-200 hover:-translate-y-1 transition-all duration-300">
-                                    {blog.image && <img src={blog.image} alt={blog.title} className="w-full h-48 object-cover" loading="lazy" />}
-                                    <div className="p-6">
-                                        <span className="text-xs text-primary-600 font-medium bg-primary-50 px-3 py-1 rounded-full">{blog.category}</span>
+                                <Link key={blog._id} to={`/blog/${blog.slug}`} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md hover:border-primary-200 hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                                    <div className="overflow-hidden relative h-52 bg-gray-100 shrink-0">
+                                        {blog.image ? (
+                                            <img src={blog.image} alt={blog.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x400/f3f4f6/a1a1aa?text=Event+Blog'; }} />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
+                                                <span className="text-4xl">📝</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="p-6 flex flex-col flex-1">
+                                        <span className="text-xs text-primary-600 font-medium bg-primary-50 px-3 py-1 rounded-full w-fit">{blog.category}</span>
                                         <h3 className="font-display text-lg font-semibold text-gray-900 mt-3 mb-2 group-hover:text-primary-600 transition-colors">{blog.title}</h3>
-                                        <p className="text-gray-500 text-sm line-clamp-2">{blog.excerpt}</p>
-                                        <div className="flex items-center justify-between mt-4 text-xs text-gray-400">
+                                        <p className="text-gray-500 text-sm line-clamp-2 mb-4 flex-1">{blog.excerpt}</p>
+                                        <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 text-xs text-gray-400">
                                             <span>{new Date(blog.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' })}</span>
                                             {blog.views > 0 && <span>👁 {blog.views}</span>}
                                         </div>

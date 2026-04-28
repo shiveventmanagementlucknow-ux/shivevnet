@@ -52,7 +52,11 @@ export function BlogDetailPage() {
                         <span>{new Date(blog.createdAt).toLocaleDateString('en-IN', { dateStyle: 'long' })}</span>
                         {blog.views > 0 && <><span>•</span><span>👁 {blog.views} views</span></>}
                     </div>
-                    {blog.image && <img src={blog.image} alt={blog.title} className="w-full rounded-2xl mb-8 max-h-96 object-cover" />}
+                    {blog.image && (
+                        <div className="overflow-hidden rounded-2xl mb-8 bg-gray-50">
+                            <img src={blog.image} alt={blog.title} className="w-full max-h-[500px] object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                        </div>
+                    )}
                     <div className="prose prose-lg max-w-none text-gray-600 leading-relaxed"
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} />
                     {blog.tags?.length > 0 && (

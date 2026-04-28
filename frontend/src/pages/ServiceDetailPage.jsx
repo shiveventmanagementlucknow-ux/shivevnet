@@ -41,9 +41,15 @@ export function ServiceDetailPage() {
                 <div className="max-w-4xl mx-auto px-4">
                     <Link to="/services" className="text-primary-600 text-sm hover:text-primary-700 flex items-center gap-1 mb-8">← Back to Services</Link>
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10">
-                        {service.image && <img src={service.image} alt={service.title} className="w-full h-64 object-cover rounded-xl mb-6" />}
-                        <div className="text-5xl mb-5">{service.icon || '🎉'}</div>
-                        <h1 className="font-display text-4xl font-bold text-gray-900 mb-4">{service.title}</h1>
+                        {service.image && (
+                            <div className="overflow-hidden rounded-2xl mb-8 bg-gray-50">
+                                <img src={service.image} alt={service.title} className="w-full h-64 md:h-96 object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                            </div>
+                        )}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                            <div className="text-5xl">{service.icon || '🎉'}</div>
+                            <h1 className="font-display text-4xl font-bold text-gray-900">{service.title}</h1>
+                        </div>
                         <p className="text-gray-600 leading-relaxed text-lg mb-6">{service.description}</p>
                         {service.features?.length > 0 && (
                             <div className="mb-8">
@@ -56,7 +62,12 @@ export function ServiceDetailPage() {
                             </div>
                         )}
                         {service.startingPrice && <p className="text-2xl font-bold text-primary-600 mb-6">Starting at ₹{service.startingPrice.toLocaleString('en-IN')}</p>}
-                        <Link to="/booking" className="btn-primary text-base px-8 py-4">Book This Service</Link>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                            <Link to="/booking" className="btn-primary text-base px-8 py-4 flex-1 text-center justify-center">Book This Service</Link>
+                            <a href={`https://wa.me/916394352002?text=Hi,%20I'm%20interested%20in%20your%20${encodeURIComponent(service.title)}%20service.`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-[#25D366] text-white font-semibold rounded-xl hover:bg-[#128C7E] transition-all flex-1 text-center">
+                                📱 WhatsApp Us
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>

@@ -13,7 +13,7 @@ export default function AdminUsers() {
     const fetchUsers = async () => {
         try {
             const { data } = await adminUsersAPI.getAll({ page, limit: 15, search });
-            setUsers(data.data || []);
+            setUsers(Array.isArray(data?.data) ? data.data : []);
             setTotalPages(data.pagination?.pages || 1);
         } catch (err) {
             toast.error('Failed to load users');

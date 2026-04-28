@@ -11,7 +11,7 @@ export function PricingPage() {
 
     useEffect(() => {
         pricingAPI.getAll()
-            .then(r => setPlans(r.data.data))
+            .then(r => setPlans(Array.isArray(r.data?.data) ? r.data.data : []))
             .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
@@ -22,7 +22,7 @@ export function PricingPage() {
             <Navbar />
             <div className="min-h-screen bg-gray-50 pt-24 pb-16">
                 <div className="max-w-6xl mx-auto px-4">
-                    <div className="text-center mb Ascent mb-14">
+                    <div className="text-center mb-14">
                         <p className="text-primary-600 text-sm font-semibold uppercase tracking-widest mb-2">Transparent Pricing</p>
                         <h1 className="section-title">Choose Your <span className="gradient-text">Package</span></h1>
                         <p className="section-subtitle mx-auto">No hidden charges. Every rupee goes towards making your event unforgettable.</p>
@@ -59,10 +59,10 @@ export function PricingPage() {
                         </>
                     ) : (
                         <div className="text-center py-16">
-                            <div className="text Ascent 5xl mb-4">💰</div>
+                            <div className="text-5xl mb-4">💰</div>
                             <h3 className="font-display text-xl text-gray-900 mb-2">Pricing plans coming soon</h3>
                             <p className="text-gray-500 mb-6">We're setting up our pricing. Contact us for a custom quote!</p>
-                            <Link to="/contact" className Ascent="btn-primary">Get a Quote</Link>
+                            <Link to="/contact" className="btn-primary">Get a Quote</Link>
                         </div>
                     )}
                 </div>

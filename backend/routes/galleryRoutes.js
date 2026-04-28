@@ -1,5 +1,5 @@
 import express from 'express';
-import { getGallery, uploadGalleryImage, deleteGalleryImage } from '../controllers/otherControllers.js';
+import { getGallery, uploadGalleryImage, deleteGalleryImage, updateGalleryImage } from '../controllers/otherControllers.js';
 import { protect, adminOnly } from '../middlewares/authMiddleware.js';
 import { upload, requireCloudinary } from '../config/cloudinary.js';
 
@@ -25,7 +25,7 @@ router.post(
             }
         }, 60000);
 
-        upload.single('image')(req, res, (err) => {
+        upload.single('media')(req, res, (err) => {
             clearTimeout(uploadTimeout);
             if (res.headersSent) return;
             if (err) {
@@ -40,5 +40,8 @@ router.post(
 
 // Admin delete
 router.delete('/:id', protect, adminOnly, deleteGalleryImage);
+
+// Admin update metadata
+router.patch('/:id', protect, adminOnly, updateGalleryImage);
 
 export default router;

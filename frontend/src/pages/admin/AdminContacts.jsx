@@ -12,7 +12,7 @@ export default function AdminContacts() {
         setLoading(true);
         try {
             const res = await contactAPI.getAll({ limit: 50 });
-            setContacts(res.data.data);
+            setContacts(Array.isArray(res.data?.data) ? res.data.data : []);
         } catch { toast.error('Failed to load messages'); }
         finally { setLoading(false); }
     };

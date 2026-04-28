@@ -13,7 +13,7 @@ export default function AdminPricing() {
 
     const fetchPlans = async () => {
         setLoading(true);
-        try { const res = await pricingAPI.getAllAdmin(); setPlans(res.data.data); }
+        try { const res = await pricingAPI.getAllAdmin(); setPlans(Array.isArray(res.data?.data) ? res.data.data : []); }
         catch { toast.error('Failed to load pricing'); }
         finally { setLoading(false); }
     };

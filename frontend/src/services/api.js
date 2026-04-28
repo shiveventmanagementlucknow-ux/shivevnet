@@ -84,6 +84,7 @@ export const blogAPI = {
 export const galleryAPI = {
   getAll: (params) => api.get('/gallery', { params }),
   upload: (formData) => api.post('/gallery', formData),
+  update: (id, data) => api.patch(`/gallery/${id}`, data),
   delete: (id) => api.delete(`/gallery/${id}`),
 };
 

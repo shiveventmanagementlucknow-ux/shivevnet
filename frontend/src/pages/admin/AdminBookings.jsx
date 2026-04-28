@@ -23,7 +23,7 @@ export default function AdminBookings() {
     setLoading(true);
     try {
       const res = await bookingAPI.getAll({ page, limit: 12, search, status: statusFilter });
-      setBookings(res.data.data);
+      setBookings(Array.isArray(res.data?.data) ? res.data.data : []);
       setPagination(res.data.pagination);
     } catch {
       toast.error('Failed to load bookings');

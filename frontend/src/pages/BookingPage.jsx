@@ -118,13 +118,11 @@ export default function BookingPage() {
               <div className="flex justify-between"><span className="text-gray-400">Event:</span><span className="text-gray-900 font-medium">{form.eventType}</span></div>
               <div className="flex justify-between"><span className="text-gray-400">Date:</span><span className="text-gray-900 font-medium">{new Date(form.date).toLocaleDateString('en-IN', { dateStyle: 'long' })}</span></div>
             </div>
-            {settings?.whatsapp && (
-              <a href={`https://wa.me/${settings.whatsapp}?text=Hi! I just submitted a booking for ${form.eventType} on ${form.date}. My name is ${form.name}.`}
-                target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 bg-green-50 text-green-600 border border-green-200 rounded-xl text-sm font-medium hover:bg-green-100 transition-colors">
-                💬 Chat on WhatsApp for faster response
-              </a>
-            )}
+            <a href={`https://wa.me/916394352002?text=Hi!%20I%20just%20submitted%20a%20booking%20for%20${encodeURIComponent(form.eventType)}%20on%20${form.date}.%20My%20name%20is%20${encodeURIComponent(form.name)}.`}
+              target="_blank" rel="noreferrer"
+              className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 bg-green-50 text-green-600 border border-green-200 rounded-xl text-sm font-medium hover:bg-green-100 transition-colors">
+              💬 Chat on WhatsApp for faster response (+91 63943 52002)
+            </a>
             <button onClick={() => { setSubmitted(false); setForm(initialForm); setTouched({}); setAvailability(null); }} className="btn-primary w-full justify-center">
               Make Another Booking
             </button>

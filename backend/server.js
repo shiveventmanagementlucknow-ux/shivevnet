@@ -1,3 +1,9 @@
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION! 💥 Shutting down...');
+  console.error(err.name, err.message, err.stack);
+  process.exit(1);
+});
+
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -24,8 +30,9 @@ import userRoutes from './routes/userRoutes.js';
 
 const app = express();
 
-console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME);
-console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY);
+// Trust proxy is REQUIRED for rate limiting to work correctly behind reverse proxies (Render, Railway, AWS, Nginx, etc.)
+app.set('trust proxy', 1);
+
 // Connect Database
 connectDB();
 
@@ -36,7 +43,13 @@ app.use(mongoSanitize());
 // ── CORS ─────────────────────────────────────────────────────────────────────
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
-  : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'];
+  : [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'https://shiveventlucknow.in',
+    'https://www.shiveventlucknow.in'
+  ];
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -120,4 +133,10 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Shiv Event Management Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+});
+
+process.on('unhandledRejection', (err) => {
+  console.error('UNHANDLED REJECTION! 💥 Logging error...');
+  console.error(err.name, err.message, err.stack);
+  // Server will continue running, but logs will capture the exact promise failure
 });

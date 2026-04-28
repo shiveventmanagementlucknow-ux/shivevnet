@@ -15,7 +15,7 @@ export default function AdminBlogs() {
         setLoading(true);
         try {
             const res = await blogAPI.getAllAdmin();
-            setBlogs(res.data.data);
+            setBlogs(Array.isArray(res.data?.data) ? res.data.data : []);
         } catch { toast.error('Failed to load blogs'); }
         finally { setLoading(false); }
     };

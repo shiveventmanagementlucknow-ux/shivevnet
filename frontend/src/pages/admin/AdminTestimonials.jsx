@@ -15,7 +15,7 @@ export default function AdminTestimonials() {
         setLoading(true);
         try {
             const res = await testimonialAPI.getAllAdmin();
-            setTestimonials(res.data.data);
+            setTestimonials(Array.isArray(res.data?.data) ? res.data.data : []);
         } catch { toast.error('Failed to load testimonials'); }
         finally { setLoading(false); }
     };
