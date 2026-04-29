@@ -3,14 +3,18 @@ import api from '../services/api';
 
 const AuthContext = createContext(null);
 
-// Roles that are allowed to access the admin panel
 const ALLOWED_ADMIN_ROLES = ['admin', 'superadmin'];
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Validate that the stored token still belongs to an active admin
+  const clearSession = useCallback(() => {
+    localStorage.removeItem('adminToken');
+    delete api.defaults.headers.common['Authorization'];
+    setUser(null);
+  }, []);
+
   const validateSession = useCallback(async () => {
     const token = localStorage.getItem('adminToken');
     if (!token) {
@@ -19,40 +23,30 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      // Set header before the /me call
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       const res = await api.get('/auth/me');
       const userData = res.data.data;
 
-      // Extra client-side role guard — even if backend sends a non-admin user somehow
       if (!ALLOWED_ADMIN_ROLES.includes(userData?.role)) {
-        console.warn('⚠️  Token belongs to a non-admin user. Clearing session.');
+        console.warn('⚠️  Non-admin token. Clearing session.');
         clearSession();
         return;
       }
 
       setUser(userData);
     } catch (err) {
-      // 401 / network error → clear stale token
       console.warn('Session validation failed:', err.response?.status, err.message);
       clearSession();
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [clearSession]);
 
   useEffect(() => {
     validateSession();
   }, [validateSession]);
 
-  const clearSession = () => {
-    localStorage.removeItem('adminToken');
-    delete api.defaults.headers.common['Authorization'];
-    setUser(null);
-  };
-
   const login = async (email, password) => {
-    // Clear any previous stale session first
     clearSession();
 
     const res = await api.post('/auth/login', { email, password });
@@ -60,7 +54,6 @@ export const AuthProvider = ({ children }) => {
 
     if (!token) throw new Error('No token received from server');
 
-    // Validate role before accepting the session
     if (!ALLOWED_ADMIN_ROLES.includes(userData?.role)) {
       throw new Error('Access denied. Admin account required.');
     }
@@ -72,11 +65,18 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const logout = () => {
-    clearSession();
-  };
+  // ✅ FIX: logout ab backend ko call karta hai taaki tokenVersion rotate ho
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      // Backend call fail bhi ho toh local session clear karo
+      console.warn('Logout API call failed (clearing locally):', err.message);
+    } finally {
+      clearSession();
+    }
+  }, [clearSession]);
 
-  // Expose a stable isAdmin derived value
   const isAdmin = !!user && ALLOWED_ADMIN_ROLES.includes(user.role);
   const isSuperAdmin = user?.role === 'superadmin';
 

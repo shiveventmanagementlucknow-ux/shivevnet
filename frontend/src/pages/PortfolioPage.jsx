@@ -1,10 +1,70 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { galleryAPI } from '../services/api';
 
 const CATEGORIES = ['All', 'Wedding', 'Corporate', 'Birthday', 'Anniversary', 'Conference', 'Concert', 'Other'];
+
+const STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+  :root {
+    --gold: #C9A84C; --gold-light: #E8C97A; --gold-dark: #8B6914;
+    --ivory: #FAF7F0; --ink: #0D0A0B; --cream: #F5EDD8;
+  }
+  .section-eyebrow { font-family: 'Outfit', sans-serif; font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--gold); font-weight: 500; }
+  .ornament { display: flex; align-items: center; gap: 1rem; justify-content: center; margin: 0.75rem 0; }
+  .ornament::before, .ornament::after { content: ''; flex: 1; max-width: 60px; height: 1px; }
+  .ornament::before { background: linear-gradient(90deg, transparent, var(--gold)); }
+  .ornament::after { background: linear-gradient(90deg, var(--gold), transparent); }
+  .cat-pill {
+    font-family: 'Outfit', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em;
+    text-transform: uppercase; padding: 0.6rem 1.5rem; cursor: pointer;
+    border: 1px solid rgba(201,168,76,0.25); background: transparent; color: #888;
+    transition: all 0.3s ease; white-space: nowrap;
+  }
+  .cat-pill:hover { border-color: var(--gold); color: var(--gold-dark); }
+  .cat-pill.active { background: var(--ink); color: var(--gold); border-color: var(--ink); }
+  .gallery-item {
+    position: relative; overflow: hidden; cursor: pointer; break-inside: avoid;
+    margin-bottom: 1.25rem;
+    transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
+  }
+  .gallery-item:hover { transform: scale(1.02); }
+  .gallery-item-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,10,11,0.9) 0%, rgba(13,10,11,0.3) 50%, transparent 100%);
+    opacity: 0; transition: opacity 0.4s ease;
+    display: flex; flex-direction: column; justify-content: flex-end; padding: 1.25rem;
+  }
+  .gallery-item:hover .gallery-item-overlay { opacity: 1; }
+  .lightbox-backdrop {
+    position: fixed; inset: 0; z-index: 1000; background: rgba(13,10,11,0.95);
+    display: flex; align-items: center; justify-content: center; padding: 1rem;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+  .lightbox-content { animation: scaleIn 0.3s cubic-bezier(0.16,1,0.3,1); }
+  .nav-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 48px; height: 48px; background: rgba(201,168,76,0.15);
+    border: 1px solid rgba(201,168,76,0.3); color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1.2rem; transition: all 0.3s ease;
+  }
+  .nav-btn:hover:not(:disabled) { background: var(--gold); color: var(--ink); }
+  .nav-btn:disabled { opacity: 0.2; cursor: not-allowed; }
+  .nav-btn.prev { left: -64px; }
+  .nav-btn.next { right: -64px; }
+  @media (max-width: 768px) {
+    .nav-btn.prev { left: 8px; }
+    .nav-btn.next { right: 8px; }
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .skeleton { background: linear-gradient(90deg, #f0ebe0 25%, #e8e0d0 50%, #f0ebe0 75%); background-size: 200% auto; animation: shimmer 1.5s linear infinite; }
+  @keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+`;
 
 export function PortfolioPage() {
     const [images, setImages] = useState([]);
@@ -20,157 +80,157 @@ export function PortfolioPage() {
     }, []);
 
     const filtered = activeCategory === 'All' ? images : images.filter(img => img.category === activeCategory);
+    const checkIsVideo = useCallback((img) => img?.mediaType === 'video' || img?.imageUrl?.match(/\.(mp4|webm|mov|ogg)$/i) || img?.imageUrl?.includes('/video/upload/'), []);
 
-    const openLightbox = (img) => setLightbox(img);
-    const closeLightbox = () => setLightbox(null);
-    const goToPrevious = () => {
-        const currentIndex = filtered.findIndex(img => img._id === lightbox._id);
-        if (currentIndex > 0) setLightbox(filtered[currentIndex - 1]);
-    };
-    const goToNext = () => {
-        const currentIndex = filtered.findIndex(img => img._id === lightbox._id);
-        if (currentIndex < filtered.length - 1) setLightbox(filtered[currentIndex + 1]);
-    };
+    const openLightbox = useCallback((img) => setLightbox(img), []);
+    const closeLightbox = useCallback(() => setLightbox(null), []);
 
-    const checkIsVideo = (img) => img?.mediaType === 'video' || img?.imageUrl?.match(/\.(mp4|webm|mov|ogg)$/i) || img?.imageUrl?.includes('/video/upload/');
+    const goToPrevious = useCallback(() => {
+        const i = filtered.findIndex(img => img._id === lightbox._id);
+        if (i > 0) setLightbox(filtered[i - 1]);
+    }, [filtered, lightbox]);
+
+    const goToNext = useCallback(() => {
+        const i = filtered.findIndex(img => img._id === lightbox._id);
+        if (i < filtered.length - 1) setLightbox(filtered[i + 1]);
+    }, [filtered, lightbox]);
 
     useEffect(() => {
         if (!lightbox) return;
         const handleKeyDown = (e) => {
-            if (e.key === 'Escape') setLightbox(null);
-            if (e.key === 'ArrowLeft') {
-                const currentIndex = filtered.findIndex(img => img._id === lightbox._id);
-                if (currentIndex > 0) setLightbox(filtered[currentIndex - 1]);
-            }
-            if (e.key === 'ArrowRight') {
-                const currentIndex = filtered.findIndex(img => img._id === lightbox._id);
-                if (currentIndex < filtered.length - 1) setLightbox(filtered[currentIndex + 1]);
-            }
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') goToPrevious();
+            if (e.key === 'ArrowRight') goToNext();
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [lightbox, filtered]);
+    }, [lightbox, goToPrevious, goToNext, closeLightbox]);
 
     return (
         <>
+            <style>{STYLES}</style>
             <Helmet><title>Portfolio – Shiv Event Management</title></Helmet>
             <Navbar />
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24 pb-16">
-                <div className="max-w-7xl mx-auto px-4">
+            <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>
+                <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1.5rem' }}>
+
                     {/* Header */}
-                    <div className="text-center mb-14 animate-fadeInUp">
-                        <p className="text-primary-600 text-sm font-semibold uppercase tracking-widest mb-2">Our Work</p>
-                        <h1 className="section-title">Event <span className="gradient-text">Portfolio</span></h1>
-                        <p className="section-subtitle mx-auto">Explore the magic we've created for our clients. Each event is a unique story of celebration and excellence.</p>
+                    <div style={{ textAlign: 'center', marginBottom: '3.5rem' }}>
+                        <p className="section-eyebrow mb-4">Our Portfolio</p>
+                        <h1 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                            A Gallery of <em style={{ color: 'var(--gold-dark)' }}>Memories</em>
+                        </h1>
+                        <div className="ornament"><span style={{ color: 'var(--gold)' }}>✦</span></div>
+                        <p style={{ fontFamily: 'Outfit', fontWeight: 300, color: '#888', marginTop: '0.5rem', maxWidth: '480px', margin: '0.5rem auto 0' }}>
+                            Each event is a unique story of celebration and excellence.
+                        </p>
                     </div>
 
                     {/* Category Filter */}
-                    <div className="flex flex-wrap gap-2 justify-center mb-12 animate-fadeInUp" style={{ animationDelay: '0.1s' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center', marginBottom: '3.5rem' }}>
                         {CATEGORIES.map(cat => (
-                            <button key={cat} onClick={() => setActiveCategory(cat)}
-                                className={`px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-300 ${activeCategory === cat ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30' : 'bg-white text-gray-600 hover:text-gray-900 border border-gray-200 hover:border-primary-300 hover:bg-primary-50 shadow-sm'}`}>
+                            <button key={cat} className={`cat-pill ${activeCategory === cat ? 'active' : ''}`}
+                                onClick={() => setActiveCategory(cat)}>
                                 {cat}
                             </button>
                         ))}
                     </div>
 
-                    {/* Gallery Grid */}
+                    {/* Gallery */}
                     {loading ? (
-                        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
+                        <div style={{ columns: '1', columnGap: '1.25rem' }}
+                            className="sm:columns-2 lg:columns-3 xl:columns-4">
                             {[...Array(12)].map((_, i) => (
-                                <div key={i} className="h-64 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 animate-pulse break-inside-avoid mb-5" />
+                                <div key={i} className="skeleton" style={{ height: `${180 + (i % 3) * 80}px`, marginBottom: '1.25rem', borderRadius: '2px' }} />
                             ))}
                         </div>
                     ) : filtered.length > 0 ? (
-                        <div className="columns-1 sm:columns-2 lg:columns-3 xl:columns-4 gap-5">
-                            {filtered.map((img, idx) => (
-                                <div key={img._id}
-                                    className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer animate-fadeInUp break-inside-avoid mb-5"
-                                    style={{ animationDelay: `${(idx % 4) * 0.1}s` }}
-                                    onClick={() => openLightbox(img)}>
-                                    {/* Media */}
+                        <div style={{ columns: '1', columnGap: '1.25rem' }}
+                            className="sm:columns-2 lg:columns-3 xl:columns-4">
+                            {filtered.map((img) => (
+                                <div key={img._id} className="gallery-item" onClick={() => openLightbox(img)}>
                                     {checkIsVideo(img) ? (
-                                        <video src={img.imageUrl} className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 bg-gray-100" muted loop playsInline onMouseEnter={e => e.target.play()} onMouseLeave={e => e.target.pause()} />
+                                        <video src={img.imageUrl} className="w-full h-auto block bg-gray-100"
+                                            muted loop playsInline
+                                            onMouseEnter={e => e.target.play()}
+                                            onMouseLeave={e => e.target.pause()} />
                                     ) : (
                                         <img src={img.imageUrl} alt={img.title} loading="lazy"
-                                            className="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500 bg-gray-100" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/600x600/f3f4f6/a1a1aa?text=Image+Unavailable'; }} />
+                                            className="w-full h-auto block"
+                                            style={{ background: '#f0ebe0' }}
+                                            onError={e => { e.target.src = 'https://placehold.co/600x600/f5edd8/c9a84c?text=✦'; }} />
                                     )}
-
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-end justify-end p-4">
-                                        <div className="w-full">
-                                            <p className="text-white font-semibold text-sm mb-1">{img.title}</p>
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-primary-300 text-xs font-medium bg-primary-600/30 px-2.5 py-1 rounded-full">{img.category}</span>
-                                                {checkIsVideo(img) && <span className="text-xs font-medium text-white px-2 py-0.5 border border-white/30 rounded-md backdrop-blur-sm">🎥 Video</span>}
-                                                {img.isFeatured && <span className="text-xs text-yellow-300 bg-yellow-600/30 px-2.5 py-1 rounded-full">⭐ Featured</span>}
+                                    <div className="gallery-item-overlay">
+                                        <div>
+                                            <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.1rem', color: 'white', fontWeight: 400, marginBottom: '0.4rem' }}>{img.title}</p>
+                                            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.4)', padding: '0.25rem 0.6rem' }}>
+                                                    {img.category}
+                                                </span>
+                                                {checkIsVideo(img) && <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.1em' }}>▶ Video</span>}
+                                                {img.isFeatured && <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', color: 'var(--gold-light)', letterSpacing: '0.1em' }}>★ Featured</span>}
                                             </div>
-                                            {img.description && <p className="text-white/70 text-xs mt-2 line-clamp-2">{img.description}</p>}
                                         </div>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20">
-                            <div className="text-6xl mb-4 animate-bounce">🖼️</div>
-                            <h3 className="font-display text-2xl text-gray-900 mb-2">No media found</h3>
-                            <p className="text-gray-500">Our portfolio is being updated. Check back soon!</p>
+                        <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+                            <div style={{ fontSize: '3rem', marginBottom: '1rem', color: 'var(--gold)' }}>✦</div>
+                            <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2rem', fontWeight: 300, color: 'var(--ink)', marginBottom: '0.5rem' }}>No media found</h3>
+                            <p style={{ fontFamily: 'Outfit', color: '#999', fontWeight: 300 }}>Portfolio being updated. Check back soon!</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Lightbox Modal */}
+            {/* Lightbox */}
             {lightbox && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeInDown" onClick={closeLightbox}>
-                    <div className="relative w-full max-w-4xl max-h-[90vh] bg-black rounded-2xl overflow-hidden shadow-2xl animate-scaleIn" onClick={e => e.stopPropagation()}>
-                        {/* Media */}
+                <div className="lightbox-backdrop" onClick={closeLightbox}>
+                    <div className="lightbox-content" style={{ position: 'relative', maxWidth: '900px', width: '100%', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
                         {checkIsVideo(lightbox) ? (
-                            <video src={lightbox.imageUrl} controls autoPlay className="w-full h-full object-contain max-h-[90vh]" />
+                            <video src={lightbox.imageUrl} controls autoPlay style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', background: 'black', display: 'block' }} />
                         ) : (
                             <img src={lightbox.imageUrl} alt={lightbox.title}
-                                className="w-full h-full object-contain max-h-[90vh]" onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x600/111111/444444?text=Image+Unavailable'; }} />
+                                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block', background: '#111' }}
+                                onError={e => { e.target.src = 'https://placehold.co/800x600/111/444?text=Image+Unavailable'; }} />
                         )}
 
-                        {/* Details */}
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black via-black/60 to-transparent p-6 text-white">
-                            <div className="flex items-start justify-between mb-3">
+                        {/* Details bar */}
+                        <div style={{ background: 'var(--ink-soft)', padding: '1.5rem 2rem', borderTop: '1px solid rgba(201,168,76,0.15)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
                                 <div>
-                                    <h2 className="text-2xl font-bold mb-2">{lightbox.title}</h2>
-                                    <div className="flex gap-2 flex-wrap">
-                                        <span className="text-xs text-white bg-primary-600 px-3 py-1.5 rounded-full font-medium">{lightbox.category}</span>
-                                        {lightbox.isFeatured && <span className="text-xs text-yellow-300 bg-yellow-600/50 px-3 py-1.5 rounded-full font-medium">⭐ Featured Event</span>}
+                                    <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', color: 'white', fontWeight: 400, marginBottom: '0.5rem' }}>{lightbox.title}</h2>
+                                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                        <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.3)', padding: '0.3rem 0.75rem' }}>
+                                            {lightbox.category}
+                                        </span>
+                                        {lightbox.isFeatured && <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', color: 'var(--gold-light)', letterSpacing: '0.1em' }}>★ Featured Event</span>}
                                     </div>
+                                    {lightbox.description && <p style={{ fontFamily: 'Outfit', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.75rem', fontWeight: 300, lineHeight: 1.6 }}>{lightbox.description}</p>}
                                 </div>
-                                <button onClick={closeLightbox} className="text-white/70 hover:text-white text-2xl transition-colors">✕</button>
+                                <button onClick={closeLightbox} style={{ background: 'none', border: '1px solid rgba(201,168,76,0.3)', color: 'rgba(255,255,255,0.5)', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: '1rem', transition: 'all 0.3s' }}
+                                    onMouseEnter={e => { e.target.style.color = 'var(--gold)'; e.target.style.borderColor = 'var(--gold)'; }}
+                                    onMouseLeave={e => { e.target.style.color = 'rgba(255,255,255,0.5)'; e.target.style.borderColor = 'rgba(201,168,76,0.3)'; }}>
+                                    ✕
+                                </button>
                             </div>
-                            {lightbox.description && <p className="text-white/80 text-sm leading-relaxed">{lightbox.description}</p>}
-                            <p className="text-white/60 text-xs mt-3">Added {new Date(lightbox.createdAt).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
 
                         {/* Navigation */}
-                        {filtered.length > 1 && (
-                            <>
-                                <button onClick={e => { e.stopPropagation(); goToPrevious(); }}
-                                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={filtered.findIndex(img => img._id === lightbox._id) === 0}>
-                                    ←
-                                </button>
-                                <button onClick={e => { e.stopPropagation(); goToNext(); }}
-                                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/20 hover:bg-white/40 text-white p-3 rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    disabled={filtered.findIndex(img => img._id === lightbox._id) === filtered.length - 1}>
-                                    →
-                                </button>
-                            </>
-                        )}
-
-                        {/* Counter */}
-                        {filtered.length > 1 && (
-                            <div className="absolute top-4 right-4 bg-black/60 text-white px-4 py-2 rounded-full text-sm font-medium">
-                                {filtered.findIndex(img => img._id === lightbox._id) + 1} / {filtered.length}
-                            </div>
-                        )}
+                        {filtered.length > 1 && (() => {
+                            const idx = filtered.findIndex(img => img._id === lightbox._id);
+                            return (
+                                <>
+                                    <button className="nav-btn prev" onClick={e => { e.stopPropagation(); goToPrevious(); }} disabled={idx === 0}>←</button>
+                                    <button className="nav-btn next" onClick={e => { e.stopPropagation(); goToNext(); }} disabled={idx === filtered.length - 1}>→</button>
+                                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(13,10,11,0.7)', color: 'var(--gold)', fontFamily: 'Outfit', fontSize: '0.7rem', letterSpacing: '0.1em', padding: '0.4rem 0.75rem', backdropFilter: 'blur(4px)' }}>
+                                        {idx + 1} / {filtered.length}
+                                    </div>
+                                </>
+                            );
+                        })()}
                     </div>
                 </div>
             )}

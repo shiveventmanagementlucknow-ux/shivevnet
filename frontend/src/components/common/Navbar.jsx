@@ -160,13 +160,31 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      {open && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 py-4 flex flex-col gap-1 shadow-lg">
+      {/* Mobile Menu Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/40 backdrop-blur-sm z-40 transition-opacity duration-300 md:hidden ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setOpen(false)}
+      />
+
+      {/* Mobile Menu Drawer (Slider) */}
+      <div
+        className={`fixed top-0 right-0 h-screen w-[280px] bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out md:hidden flex flex-col ${open ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Drawer Header */}
+        <div className="flex items-center justify-between p-5 border-b border-gray-100">
+          <span className="font-display text-xl font-bold text-gray-900">Menu</span>
+          <button onClick={() => setOpen(false)} className="p-2 text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+            ✕
+          </button>
+        </div>
+
+        {/* Drawer Links */}
+        <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2">
           {links.map(link => (
             <Link
               key={link.to}
               to={link.to}
+              onClick={() => setOpen(false)}
               className={`px-4 py-3 rounded-xl text-sm font-medium transition-colors ${pathname === link.to
                 ? 'text-primary-600 bg-primary-50'
                 : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
@@ -176,36 +194,35 @@ export default function Navbar() {
             </Link>
           ))}
 
-          <div className="border-t border-gray-100 mt-2 pt-2">
+          <div className="border-t border-gray-100 mt-4 pt-4 flex flex-col gap-3">
             {isLoggedIn ? (
               <>
-                <Link to="/profile" className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-gray-50">
-                  👤 {clientUser?.name || 'Profile'}
+                <Link to="/profile" onClick={() => setOpen(false)} className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm text-gray-600 hover:bg-gray-50 font-medium">
+                  👤 {clientUser?.name || 'My Profile'}
                 </Link>
-                <Link to="/booking" className="btn-primary text-sm mt-1 justify-center">
-                  Book Event
+                <Link to="/booking" onClick={() => setOpen(false)} className="btn-primary text-sm justify-center py-3 w-full">
+                  📅 Book Event
                 </Link>
                 <button
-                  onClick={logout}
-                  className="w-full mt-1 px-4 py-3 rounded-xl text-sm text-red-500 hover:bg-red-50 text-left"
+                  onClick={() => { logout(); setOpen(false); }}
+                  className="w-full px-4 py-3 rounded-xl text-sm text-red-600 hover:bg-red-50 text-left font-medium transition-colors"
                 >
                   🚪 Logout
                 </button>
               </>
             ) : (
               <>
-                <Link to="/login" className="block px-4 py-3 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50">
+                <Link to="/login" onClick={() => setOpen(false)} className="block px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 text-center border border-gray-200 transition-colors">
                   Login
                 </Link>
-                <Link to="/signup" className="btn-primary text-sm mt-1 justify-center">
+                <Link to="/signup" onClick={() => setOpen(false)} className="btn-primary text-sm justify-center py-3 w-full">
                   Sign Up
                 </Link>
               </>
             )}
-            {/* ❌ Admin login link removed from mobile menu too */}
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 }

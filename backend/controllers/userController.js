@@ -139,7 +139,7 @@ export const changeUserPassword = async (req, res, next) => {
 // @route   GET /api/users/admin/all
 export const getAllUsersAdmin = async (req, res, next) => {
     try {
-        const { page = 1, limit = 20, search } = req.query;
+        const { page = 1, limit = 20, search } = req.query; // Default to page 1, limit 20
         const query = {};
 
         if (search) {
@@ -151,16 +151,20 @@ export const getAllUsersAdmin = async (req, res, next) => {
             ];
         }
 
-        const total = await ClientUser.countDocuments(query);
-        const users = await ClientUser.find(query)
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Run count and find queries in parallel for better performance
+        const [total, users] = await Promise.all([
+            ClientUser.countDocuments(query),
+            ClientUser.find(query).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+        ]);
 
         res.json({
             success: true,
             data: users,
-            pagination: { total, page: parseInt(page), pages: Math.ceil(total / limit), limit: parseInt(limit) }
+            pagination: { total, page: pageNum, pages: Math.ceil(total / limitNum), limit: limitNum },
         });
     } catch (error) {
         next(error);
@@ -171,18 +175,32 @@ export const getAllUsersAdmin = async (req, res, next) => {
 // @route   GET /api/users/admin/stats
 export const getUserStatsAdmin = async (req, res, next) => {
     try {
-        const total = await ClientUser.countDocuments();
-        const active = await ClientUser.countDocuments({ isActive: true });
-        const thisMonth = await ClientUser.countDocuments({
-            createdAt: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
-        });
-        const thisWeek = await ClientUser.countDocuments({
-            createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-        });
+        const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+        // Use a single aggregation pipeline to get all stats in one DB call
+        const statsResult = await ClientUser.aggregate([
+            {
+                $facet: {
+                    total: [{ $count: 'count' }],
+                    active: [{ $match: { isActive: true } }, { $count: 'count' }],
+                    thisMonth: [{ $match: { createdAt: { $gte: startOfMonth } } }, { $count: 'count' }],
+                    thisWeek: [{ $match: { createdAt: { $gte: oneWeekAgo } } }, { $count: 'count' }],
+                },
+            },
+            {
+                $project: {
+                    total: { $ifNull: [{ $arrayElemAt: ['$total.count', 0] }, 0] },
+                    active: { $ifNull: [{ $arrayElemAt: ['$active.count', 0] }, 0] },
+                    thisMonth: { $ifNull: [{ $arrayElemAt: ['$thisMonth.count', 0] }, 0] },
+                    thisWeek: { $ifNull: [{ $arrayElemAt: ['$thisWeek.count', 0] }, 0] },
+                },
+            },
+        ]);
 
         res.json({
             success: true,
-            data: { total, active, thisMonth, thisWeek }
+            data: statsResult[0] || { total: 0, active: 0, thisMonth: 0, thisWeek: 0 },
         });
     } catch (error) {
         next(error);

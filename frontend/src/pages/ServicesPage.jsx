@@ -1,9 +1,46 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServicesPage.jsx
+// ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { serviceAPI } from '../services/api';
+
+const SHARED_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
+  :root { --gold:#C9A84C;--gold-light:#E8C97A;--gold-dark:#8B6914;--ivory:#FAF7F0;--ink:#0D0A0B;--ink-soft:#1A1612;--cream:#F5EDD8; }
+  .eyebrow { font-family:'Outfit',sans-serif;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);font-weight:500; }
+  .ornament { display:flex;align-items:center;gap:1rem;justify-content:center;margin:0.75rem 0; }
+  .ornament::before,.ornament::after { content:'';flex:1;max-width:60px;height:1px; }
+  .ornament::before { background:linear-gradient(90deg,transparent,var(--gold)); }
+  .ornament::after { background:linear-gradient(90deg,var(--gold),transparent); }
+  .gold-btn {
+    font-family:'Outfit',sans-serif;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;
+    font-weight:500;padding:1rem 2.5rem;background:var(--gold);color:var(--ink);border:none;cursor:pointer;
+    display:inline-flex;align-items:center;gap:0.75rem;text-decoration:none;transition:all 0.3s ease;position:relative;overflow:hidden;
+  }
+  .gold-btn:hover { background:var(--gold-light);transform:translateY(-1px);box-shadow:0 8px 25px rgba(201,168,76,0.35); }
+  .outline-btn {
+    font-family:'Outfit',sans-serif;font-size:0.8rem;letter-spacing:0.15em;text-transform:uppercase;
+    font-weight:500;padding:1rem 2.5rem;background:transparent;color:var(--gold);border:1px solid rgba(201,168,76,0.4);
+    cursor:pointer;display:inline-flex;align-items:center;gap:0.75rem;text-decoration:none;transition:all 0.3s ease;
+  }
+  .outline-btn:hover { border-color:var(--gold);background:rgba(201,168,76,0.06); }
+  .svc-card {
+    background:white;border:1px solid rgba(201,168,76,0.1);overflow:hidden;
+    transition:all 0.5s cubic-bezier(0.16,1,0.3,1);position:relative;display:block;text-decoration:none;
+  }
+  .svc-card:hover { transform:translateY(-8px);box-shadow:0 30px 60px rgba(0,0,0,0.1),0 0 0 1px rgba(201,168,76,0.25); }
+  .svc-card .reveal { opacity:0;transition:opacity 0.4s ease; }
+  .svc-card:hover .reveal { opacity:1; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .fade-up { animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+  .d1{animation-delay:0.1s}.d2{animation-delay:0.2s}.d3{animation-delay:0.3s}.d4{animation-delay:0.4s}
+  .skeleton{background:linear-gradient(90deg,#f0ebe0 25%,#e8e0d0 50%,#f0ebe0 75%);background-size:200% auto;animation:shimmer 1.5s linear infinite;}
+  @keyframes shimmer{0%{background-position:200%}100%{background-position:-200%}}
+`;
 
 export function ServicesPage() {
     const [services, setServices] = useState([]);
@@ -18,69 +55,90 @@ export function ServicesPage() {
 
     return (
         <>
+            <style>{SHARED_STYLES}</style>
             <Helmet><title>Our Services – Shiv Event Management</title></Helmet>
             <Navbar />
-            <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-gray-50 via-white to-purple-50/30 pt-24 pb-16">
-                {/* Colorful Background Orbs */}
-                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary-400/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2 translate-x-1/3" />
-                <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-400/10 rounded-full blur-[120px] pointer-events-none translate-y-1/3 -translate-x-1/3" />
-
-                <div className="max-w-7xl mx-auto px-4 relative z-10">
-                    <div className="text-center mb-16">
-                        <span className="inline-block py-1.5 px-4 rounded-full bg-gradient-to-r from-primary-50 to-purple-50 border border-primary-100 text-primary-700 text-xs font-bold uppercase tracking-widest mb-4 animate-fadeInUp shadow-sm">What We Offer</span>
-                        <h1 className="section-title animate-fadeInUp" style={{ animationDelay: '0.1s' }}>Our <span className="gradient-text">Services</span></h1>
-                        <p className="text-gray-500 text-lg max-w-2xl mx-auto animate-fadeInUp" style={{ animationDelay: '0.2s' }}>Every service is crafted with passion, precision, and a commitment to excellence.</p>
+            <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1.5rem' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+                        <p className="eyebrow fade-up mb-4">What We Offer</p>
+                        <h1 className="fade-up d1" style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                            Crafted With <em style={{ color: 'var(--gold-dark)' }}>Passion</em>
+                        </h1>
+                        <div className="ornament fade-up d1"><span style={{ color: 'var(--gold)' }}>✦</span></div>
+                        <p className="fade-up d2" style={{ fontFamily: 'Outfit', fontWeight: 300, color: '#888', marginTop: '0.75rem', maxWidth: '500px', margin: '0.75rem auto 0', lineHeight: 1.7 }}>
+                            Every service is crafted with passion, precision, and a commitment to excellence.
+                        </p>
                     </div>
+
                     {loading ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {[...Array(6)].map((_, i) => <div key={i} className="h-64 animate-pulse bg-white rounded-3xl shadow-sm" />)}
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2rem' }}>
+                            {[...Array(6)].map((_, i) => <div key={i} className="skeleton" style={{ height: '360px' }} />)}
                         </div>
                     ) : services.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2rem' }}>
                             {services.map((s, idx) => (
-                                <Link key={s._id} to={`/services/${s.slug}`}
-                                    className="group relative bg-white rounded-3xl shadow-sm hover:shadow-2xl hover:shadow-primary-500/20 transition-all duration-500 hover:-translate-y-2 animate-fadeInUp flex flex-col overflow-hidden border border-gray-100 hover:border-transparent"
-                                    style={{ animationDelay: `${idx * 0.1}s` }}>
-
-                                    {/* Colorful hover border effect using pseudo-element */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-primary-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-10 transition-opacity duration-500 z-0"></div>
-
+                                <Link key={s._id} to={`/services/${s.slug}`} className="svc-card fade-up" style={{ animationDelay: `${(idx % 3) * 0.1}s` }}>
                                     {s.image ? (
-                                        <div className="h-52 overflow-hidden relative shrink-0 z-10">
-                                            <div className="absolute inset-0 bg-primary-900/10 group-hover:bg-transparent transition-colors duration-500 z-10" />
-                                            <img src={s.image} alt={s.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.target.style.display = 'none'; }} />
-                                            <div className="absolute top-4 left-4 w-12 h-12 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl shadow-lg border border-white/50 z-20 group-hover:rotate-12 transition-transform duration-500">{s.icon || '🎉'}</div>
+                                        <div style={{ height: '220px', overflow: 'hidden', position: 'relative' }}>
+                                            <img src={s.image} alt={s.title} loading="lazy"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.7s ease', display: 'block' }}
+                                                onMouseEnter={e => e.target.style.transform = 'scale(1.08)'}
+                                                onMouseLeave={e => e.target.style.transform = 'scale(1)'}
+                                                onError={e => { e.target.style.display = 'none'; }} />
+                                            <div style={{ position: 'absolute', top: '1rem', left: '1rem', width: '44px', height: '44px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
+                                                {s.icon || '✦'}
+                                            </div>
                                         </div>
                                     ) : (
-                                        <div className="p-8 pb-0 relative z-10">
-                                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-50 to-purple-50 flex items-center justify-center text-4xl group-hover:scale-110 group-hover:rotate-12 transition-all duration-500 shadow-inner border border-primary-100/50">{s.icon || '🎉'}</div>
+                                        <div style={{ padding: '2rem 2rem 0' }}>
+                                            <div style={{ width: '52px', height: '52px', background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', transition: 'all 0.4s ease' }}>
+                                                {s.icon || '✦'}
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="p-8 flex flex-col flex-1 relative z-10">
-                                        <h3 className="font-display text-2xl font-bold text-gray-900 mb-3 group-hover:text-primary-700 transition-colors">{s.title}</h3>
-                                        <p className="text-gray-500 text-sm leading-relaxed flex-1 mb-6">{s.shortDescription}</p>
-                                        {s.startingPrice && <p className="text-primary-600 text-sm font-bold mb-4">Starting ₹{s.startingPrice.toLocaleString('en-IN')}</p>}
-                                        <div className="mt-auto pt-5 border-t border-gray-100 flex items-center justify-between group-hover:border-primary-100 transition-colors">
-                                            <span className="text-primary-600 font-semibold text-sm group-hover:text-purple-600 transition-colors">Explore Service</span>
-                                            <span className="w-10 h-10 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 group-hover:bg-gradient-to-r group-hover:from-primary-600 group-hover:to-purple-600 group-hover:text-white transition-all duration-500 transform group-hover:translate-x-1 group-hover:shadow-md">→</span>
+                                    <div style={{ padding: '2rem' }}>
+                                        <p className="eyebrow mb-2">{s.category || 'Service'}</p>
+                                        <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.6rem', fontWeight: 400, color: 'var(--ink)', marginBottom: '0.75rem', transition: 'color 0.3s' }}>
+                                            {s.title}
+                                        </h3>
+                                        <p style={{ fontFamily: 'Outfit', fontSize: '0.875rem', color: '#777', lineHeight: 1.7, fontWeight: 300, marginBottom: '1.25rem' }}>
+                                            {s.shortDescription}
+                                        </p>
+                                        {s.startingPrice && (
+                                            <p style={{ fontFamily: 'Outfit', fontSize: '0.7rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--gold-dark)', fontWeight: 500, marginBottom: '1.25rem' }}>
+                                                From ₹{s.startingPrice.toLocaleString('en-IN')}
+                                            </p>
+                                        )}
+                                        <div className="reveal" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'Outfit', fontSize: '0.65rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold-dark)', fontWeight: 500 }}>
+                                            Discover More →
                                         </div>
                                     </div>
                                 </Link>
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-16">
-                            <div className="text-5xl mb-4">🎯</div>
-                            <h3 className="font-display text-xl text-gray-900 mb-2">No services available yet</h3>
-                            <p className="text-gray-500">Our services are being set up. Please check back soon!</p>
+                        <div style={{ textAlign: 'center', padding: '5rem 0' }}>
+                            <div style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--gold)' }}>✦</div>
+                            <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '2rem', fontWeight: 300, color: 'var(--ink)' }}>No services available yet</h3>
                         </div>
                     )}
-                    <div className="mt-14 text-center bg-gradient-to-br from-primary-600 to-purple-700 rounded-3xl p-10">
-                        <h2 className="font-display text-3xl text-white mb-3">Don't see what you need?</h2>
-                        <p className="text-primary-100 mb-6">We handle all kinds of events. Let's talk about your unique requirements.</p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-white text-primary-700 font-semibold rounded-xl hover:shadow-xl transition-all">Get in Touch</Link>
-                            <a href="https://wa.me/916394352002" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center gap-2 px-8 py-3 bg-[#25D366] text-white font-semibold rounded-xl hover:shadow-xl transition-all border border-[#25D366] hover:border-[#128C7E] hover:bg-[#128C7E]">📱 +91 63943 52002</a>
+
+                    {/* Bottom CTA */}
+                    <div style={{ marginTop: '5rem', background: 'var(--ink)', padding: '4rem', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+                        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(ellipse at center, rgba(201,168,76,0.06) 0%, transparent 60%)' }} />
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            <p className="eyebrow mb-4" style={{ color: 'rgba(201,168,76,0.7)' }}>Custom Request</p>
+                            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(1.8rem, 4vw, 3rem)', fontWeight: 300, color: 'white', marginBottom: '1rem' }}>
+                                Don't see what you need?
+                            </h2>
+                            <p style={{ fontFamily: 'Outfit', color: 'rgba(250,247,240,0.5)', fontWeight: 300, marginBottom: '2rem', maxWidth: '400px', margin: '0 auto 2rem' }}>
+                                We handle all kinds of events. Let's talk about your unique requirements.
+                            </p>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
+                                <Link to="/contact" className="gold-btn">Get in Touch</Link>
+                                <a href="https://wa.me/916394352002" target="_blank" rel="noopener noreferrer" className="outline-btn">📱 +91 63943 52002</a>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -116,9 +116,19 @@ export const getMe = async (req, res) => {
 
 // ── @desc    Logout — invalidates ALL sessions for this admin
 // ── @route   POST /api/auth/logout
+// ── @desc    Logout — invalidates ALL sessions for this admin
+// ── @route   POST /api/auth/logout
 export const logout = async (req, res, next) => {
   try {
+    // ✅ FIX: select('+tokenVersion') already done in protect middleware
+    // but findById se fresh fetch karo taaki stale data na ho
     const user = await User.findById(req.user._id).select('+tokenVersion');
+
+    // ✅ FIX: null check — agar user delete ho chuka ho
+    if (!user) {
+      return res.json({ success: true, message: 'Logged out successfully' });
+    }
+
     await user.invalidateSessions();
     console.log(`✅ Admin logged out + all sessions invalidated: ${user.email}`);
     return res.json({ success: true, message: 'Logged out successfully' });
