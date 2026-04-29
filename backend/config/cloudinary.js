@@ -34,20 +34,17 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder: 'event-management/gallery',
-    resource_type: 'image',
-    transformation: [
-      { width: 800, height: 600, crop: 'limit', quality: 60, fetch_format: 'auto' },
-    ],
+    resource_type: 'auto',
   }),
 });
 
 export const upload = multer({
   storage,
-  limits: { fileSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB limit to allow video uploads
   fileFilter: (req, file, cb) => {   // ← 'res' ki jagah 'file' aur 'cb' sahi params
-    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime', 'video/ogg'];
     if (!allowed.includes(file.mimetype)) {
-      return cb(new Error('Only JPG, PNG, and WebP images are allowed'), false);
+      return cb(new Error('Only Images (JPG, PNG, WebP) and Videos (MP4, WEBM, MOV) are allowed'), false);
     }
     cb(null, true);
   },

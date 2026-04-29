@@ -64,6 +64,10 @@ const STYLES = `
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
   .skeleton { background: linear-gradient(90deg, #f0ebe0 25%, #e8e0d0 50%, #f0ebe0 75%); background-size: 200% auto; animation: shimmer 1.5s linear infinite; }
   @keyframes shimmer { 0%{background-position:200%} 100%{background-position:-200%} }
+  .masonry-grid { column-count: 1; column-gap: 1.25rem; }
+  @media (min-width: 640px) { .masonry-grid { column-count: 2; } }
+  @media (min-width: 1024px) { .masonry-grid { column-count: 3; } }
+  @media (min-width: 1280px) { .masonry-grid { column-count: 4; } }
 `;
 
 export function PortfolioPage() {
@@ -138,15 +142,13 @@ export function PortfolioPage() {
 
                     {/* Gallery */}
                     {loading ? (
-                        <div style={{ columns: '1', columnGap: '1.25rem' }}
-                            className="sm:columns-2 lg:columns-3 xl:columns-4">
+                        <div className="masonry-grid">
                             {[...Array(12)].map((_, i) => (
                                 <div key={i} className="skeleton" style={{ height: `${180 + (i % 3) * 80}px`, marginBottom: '1.25rem', borderRadius: '2px' }} />
                             ))}
                         </div>
                     ) : filtered.length > 0 ? (
-                        <div style={{ columns: '1', columnGap: '1.25rem' }}
-                            className="sm:columns-2 lg:columns-3 xl:columns-4">
+                        <div className="masonry-grid">
                             {filtered.map((img) => (
                                 <div key={img._id} className="gallery-item" onClick={() => openLightbox(img)}>
                                     {checkIsVideo(img) ? (
