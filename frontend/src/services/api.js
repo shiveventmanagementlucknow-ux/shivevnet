@@ -2,8 +2,8 @@ import axios from 'axios';
 
 // Main API client for authenticated requests
 const api = axios.create({
-  baseURL: `${import.meta.env.VITE_API_URL}/api` || 'http://localhost:5000/api',
-  timeout: 15000, // 15s default for normal requests
+  baseURL: (import.meta.env.VITE_API_URL || 'http://localhost:5000') + '/api',
+  timeout: 15000,
 });
 
 // Request interceptor — attach token + set timeout per request type
