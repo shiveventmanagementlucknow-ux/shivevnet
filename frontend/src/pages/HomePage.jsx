@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
-import { testimonialAPI } from '../services/api';
+import { testimonialAPI, serviceAPI, galleryAPI } from '../services/api';
 import { useSettings } from '../context/SettingsContext';
 
 /* ─── Parallax (desktop only) ──────────────────────────────────────── */
@@ -83,6 +83,10 @@ export default function HomePage() {
   const [activeT, setActiveT] = useState(0);
   const [hoveredFeature, setHoveredFeature] = useState(null);
   const intervalRef = useRef(null);
+  const [services, setServices] = useState([]);
+  const [loadingS, setLoadingS] = useState(true);
+  const [portfolio, setPortfolio] = useState([]);
+  const [loadingP, setLoadingP] = useState(true);
   const { settings } = useSettings();
   const heroOffset = useParallax(0.2);
 
@@ -102,6 +106,18 @@ export default function HomePage() {
       .then(r => setTestimonials(Array.isArray(r.data?.data) ? r.data.data : []))
       .catch(() => { })
       .finally(() => setLoadingT(false));
+  }, []);
+
+  useEffect(() => {
+    serviceAPI.getAll()
+      .then(r => setServices(Array.isArray(r.data?.data) ? r.data.data.slice(0, 4) : []))
+      .catch(() => { })
+      .finally(() => setLoadingS(false));
+
+    galleryAPI.getAll({ limit: 5 })
+      .then(r => setPortfolio(Array.isArray(r.data?.data) ? r.data.data.slice(0, 5) : []))
+      .catch(() => { })
+      .finally(() => setLoadingP(false));
   }, []);
 
   useEffect(() => {
@@ -226,9 +242,33 @@ export default function HomePage() {
           background: rgba(201,168,76,0.1); border-color: rgba(201,168,76,0.4);
         }
 
+        /* ── Services Grid ── */
+        .services-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        .service-card { background: #fff; border: 1px solid rgba(201,168,76,0.15); overflow: hidden; transition: all 0.4s ease; text-decoration: none; display: flex; flex-direction: column; }
+        .service-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); border-color: var(--gold); }
+        .sc-img-wrap { width: 100%; height: 220px; overflow: hidden; }
+        .sc-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+        .service-card:hover .sc-img { transform: scale(1.05); }
+
+        /* ── Portfolio Grid (5 Items) ── */
+        .portfolio-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1rem; }
+        .portfolio-item { position: relative; overflow: hidden; background: #111; cursor: pointer; border-radius: 4px; }
+        .portfolio-item:nth-child(1), .portfolio-item:nth-child(2) { grid-column: span 3; height: 320px; }
+        .portfolio-item:nth-child(3), .portfolio-item:nth-child(4), .portfolio-item:nth-child(5) { grid-column: span 2; height: 260px; }
+        .p-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease, opacity 0.3s ease; opacity: 0.85; }
+        .portfolio-item:hover .p-img { transform: scale(1.05); opacity: 1; }
+        .p-overlay {
+          position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+          opacity: 0; transition: opacity 0.4s ease; display: flex; align-items: flex-end; padding: 1.5rem;
+        }
+        .portfolio-item:hover .p-overlay { opacity: 1; }
+
         /* ── RESPONSIVE ── */
         @media (max-width: 1024px) {
           .features-grid { grid-template-columns: repeat(2, 1fr); }
+          .services-grid { grid-template-columns: repeat(2, 1fr); }
+          .portfolio-item:nth-child(1), .portfolio-item:nth-child(2) { grid-column: span 3; height: 280px; }
+          .portfolio-item:nth-child(3), .portfolio-item:nth-child(4), .portfolio-item:nth-child(5) { grid-column: span 2; height: 220px; }
         }
 
         @media (max-width: 768px) {
@@ -237,6 +277,9 @@ export default function HomePage() {
           .stat-cell:nth-child(odd) { border-right: 1px solid rgba(201,168,76,0.1); }
           .stat-cell:last-child, .stat-cell:nth-last-child(2):nth-child(odd) { border-bottom: none; }
           .features-grid { grid-template-columns: 1fr; }
+          .services-grid { grid-template-columns: 1fr; }
+          .portfolio-grid { grid-template-columns: 1fr; }
+          .portfolio-item:nth-child(n) { grid-column: span 1; height: 260px; }
         }
 
         @media (max-width: 480px) {
@@ -386,6 +429,76 @@ export default function HomePage() {
         </section>
       )}
 
+      {/* ══════════════════════════ SERVICES ══════════════════════════════ */}
+      <section style={{ background: 'var(--cream)', padding: 'clamp(4rem, 8vw, 7rem) 1.25rem' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(3rem, 6vw, 5rem)' }}>
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Our Expertise</p>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 300, color: 'var(--ink)', lineHeight: 1.15, marginBottom: '1rem' }}>
+              Bespoke <em style={{ color: 'var(--gold-dark)' }}>Services</em>
+            </h2>
+            <div className="ornament"><span style={{ color: 'var(--gold)' }}>✦</span></div>
+          </div>
+
+          {!loadingS && services.length > 0 && (
+            <div className="services-grid">
+              {services.map(s => (
+                <Link key={s._id} to={`/services/${s.slug}`} className="service-card">
+                  <div className="sc-img-wrap">
+                    <img src={typeof s.image === 'string' ? s.image : (s.image?.url || 'https://placehold.co/600x400/f5edd8/c9a84c?text=Service')} alt={s.title || 'Service'} className="sc-img" loading="lazy" onError={(e) => { e.target.src = 'https://placehold.co/600x400/f5edd8/c9a84c?text=Service'; }} />
+                  </div>
+                  <div style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.4rem', fontWeight: 600, color: 'var(--ink)', marginBottom: '0.5rem' }}>{s.title}</h3>
+                    <p style={{ fontFamily: 'Outfit', fontSize: '0.85rem', lineHeight: 1.6, color: '#666', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', flexGrow: 1 }}>{s.description}</p>
+                    <div style={{ marginTop: '1.25rem', fontFamily: 'Outfit', fontSize: '0.75rem', fontWeight: 600, color: 'var(--gold)', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Explore →</div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+          <div style={{ textAlign: 'center', marginTop: '3.5rem' }}>
+            <Link to="/services" className="btn-outline-dark">View All Services</Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════ PORTFOLIO ═════════════════════════════ */}
+      <section style={{ background: 'var(--ink)', padding: 'clamp(4rem, 8vw, 7rem) 1.25rem' }}>
+        <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 'clamp(3rem, 6vw, 5rem)' }}>
+            <p className="eyebrow" style={{ marginBottom: '1rem' }}>Our Masterpieces</p>
+            <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(2rem, 5vw, 3.8rem)', fontWeight: 300, color: '#fff', lineHeight: 1.15, marginBottom: '1rem' }}>
+              Featured <em className="shimmer">Portfolio</em>
+            </h2>
+            <div className="ornament"><span style={{ color: 'var(--gold)' }}>✦</span></div>
+          </div>
+
+          {!loadingP && portfolio.length > 0 && (
+            <div className="portfolio-grid">
+              {portfolio.slice(0, 5).map((p, i) => (
+                <Link key={p._id || i} to="/portfolio" className="portfolio-item">
+                  {p.mediaType === 'video' || (typeof p.imageUrl === 'string' && p.imageUrl.match(/\.(mp4|webm|mov|ogg)$/i)) ? (
+                    <video src={typeof p.imageUrl === 'string' ? p.imageUrl : (p.image?.url || '')} className="p-img" autoPlay muted loop playsInline style={{ objectFit: 'cover' }} />
+                  ) : (
+                    <img src={typeof p.imageUrl === 'string' ? p.imageUrl : (p.image?.url || p.image || 'https://placehold.co/600x600/111/C9A84C?text=Portfolio')} alt={p.title || 'Event'} className="p-img" loading="lazy" onError={(e) => { e.target.src = 'https://placehold.co/600x600/111/C9A84C?text=Portfolio'; }} />
+                  )}
+                  <div className="p-overlay">
+                    <div>
+                      <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', color: '#fff', margin: 0, fontWeight: 400 }}>{p.title || 'Event Highlights'}</h3>
+                      {p.category && <p style={{ fontFamily: 'Outfit', fontSize: '0.7rem', letterSpacing: '0.15em', color: 'var(--gold)', textTransform: 'uppercase', marginTop: '0.25rem' }}>{p.category}</p>}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
+          <div style={{ textAlign: 'center', marginTop: '3.5rem' }}>
+            <Link to="/portfolio" className="btn-outline-light">Discover Full Gallery</Link>
+          </div>
+        </div>
+      </section>
+
       {/* ══════════════════════════ WHY US ══════════════════════════════ */}
       <section style={{ background: 'var(--ivory)', padding: 'clamp(4rem, 8vw, 7rem) 1.25rem' }}>
         <div style={{ maxWidth: '72rem', margin: '0 auto' }}>
@@ -463,13 +576,13 @@ export default function HomePage() {
                     }}>
                       <div style={{ fontFamily: 'Georgia, serif', fontSize: 'clamp(3rem, 8vw, 5rem)', lineHeight: 0.6, color: 'rgba(201,168,76,0.12)', marginBottom: '1.25rem', userSelect: 'none' }}>"</div>
                       <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(1rem, 2.5vw, 1.4rem)', fontStyle: 'italic', color: 'rgba(250,247,240,0.85)', lineHeight: 1.85, fontWeight: 300, marginBottom: '1.75rem' }}>
-                        {t.text}
+                        {t.text || 'No testimonial text provided.'}
                       </p>
                       <div style={{ display: 'flex', justifyContent: 'center', gap: '0.2rem', marginBottom: '1rem' }}>
                         {[...Array(t.rating || 5)].map((_, j) => <span key={j} style={{ color: 'var(--gold)', fontSize: '0.85rem' }}>★</span>)}
                       </div>
                       <div style={{ width: '36px', height: '1px', background: 'var(--gold)', margin: '0 auto 0.85rem' }} />
-                      <div style={{ fontFamily: 'Outfit', fontSize: '0.68rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 600 }}>{t.name}</div>
+                      <div style={{ fontFamily: 'Outfit', fontSize: '0.68rem', letterSpacing: '0.22em', textTransform: 'uppercase', color: 'var(--gold)', fontWeight: 600 }}>{t.name || 'Anonymous'}</div>
                       {t.role && <div style={{ fontFamily: 'Outfit', fontSize: '0.66rem', color: 'rgba(250,247,240,0.35)', marginTop: '0.2rem', letterSpacing: '0.1em' }}>{t.role}</div>}
                     </div>
                   </div>
@@ -485,9 +598,9 @@ export default function HomePage() {
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontFamily: 'Outfit', fontSize: '0.65rem', fontWeight: 700,
                       color: i === activeT ? 'var(--ink)' : 'var(--gold)', transition: 'all 0.3s ease',
-                    }}>{t.name[0].toUpperCase()}</div>
+                    }}>{(t.name?.charAt(0) || 'A').toUpperCase()}</div>
                     <span style={{ fontFamily: 'Outfit', fontSize: '0.65rem', letterSpacing: '0.1em', color: i === activeT ? 'var(--gold)' : 'rgba(250,247,240,0.35)', transition: 'color 0.3s ease' }}>
-                      {t.name}
+                      {t.name || 'Anonymous'}
                     </span>
                   </button>
                 ))}

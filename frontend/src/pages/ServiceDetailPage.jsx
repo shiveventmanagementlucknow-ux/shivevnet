@@ -24,6 +24,18 @@ const STYLES = `
   @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
   .fade-up { animation:fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
   .d1{animation-delay:0.1s}.d2{animation-delay:0.2s}.d3{animation-delay:0.3s}
+
+  /* ── Responsive Classes ── */
+  .svc-img-container { height: 420px; overflow: hidden; }
+  .svc-content-pad { padding: 3rem; }
+  .svc-header-flex { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 1.5rem; }
+  .svc-btn-group { display: flex; flex-wrap: wrap; gap: 1rem; }
+  @media (max-width: 768px) {
+    .svc-img-container { height: 260px; }
+    .svc-content-pad { padding: 1.5rem; }
+    .svc-header-flex { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    .svc-btn-group > * { width: 100%; min-width: 100% !important; text-align: center; }
+  }
 `;
 
 export function ServiceDetailPage() {
@@ -77,7 +89,7 @@ export function ServiceDetailPage() {
 
                     <div style={{ background: 'white', border: '1px solid rgba(201,168,76,0.1)' }}>
                         {service.image && (
-                            <div style={{ overflow: 'hidden', height: '420px' }}>
+                            <div className="svc-img-container">
                                 <img src={service.image} alt={service.title}
                                     style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.8s ease' }}
                                     onMouseEnter={e => e.target.style.transform = 'scale(1.04)'}
@@ -86,8 +98,8 @@ export function ServiceDetailPage() {
                             </div>
                         )}
 
-                        <div style={{ padding: '3rem' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                        <div className="svc-content-pad">
+                            <div className="svc-header-flex">
                                 <div style={{ fontSize: '3rem', width: '72px', height: '72px', background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                                     {service.icon || '✦'}
                                 </div>
@@ -128,7 +140,7 @@ export function ServiceDetailPage() {
                                 </div>
                             )}
 
-                            <div className="fade-up d3" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                            <div className="fade-up d3 svc-btn-group">
                                 <Link to="/booking" className="gold-btn" style={{ flex: '1', minWidth: '160px' }}>Book This Service</Link>
                                 <a href={`https://wa.me/916394352002?text=Hi,%20I'm%20interested%20in%20your%20${encodeURIComponent(service.title)}%20service.`}
                                     target="_blank" rel="noopener noreferrer" className="outline-btn" style={{ flex: '1', minWidth: '160px' }}>

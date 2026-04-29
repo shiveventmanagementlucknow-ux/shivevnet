@@ -19,8 +19,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
           <div className="col-span-1 md:col-span-2 animate-fadeInUp">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md hover:scale-110 transition-transform duration-300">E</div>
-              <span className="font-display text-xl font-bold text-white">{s.companyName ? <>{s.companyName.split(' ')[0]}<span className="text-primary-400">{' '}{s.companyName.split(' ').slice(1).join(' ')}</span></> : <>Event<span className="text-primary-400">Pro</span></>}</span>
+              <div className="w-9 h-9 bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-md hover:scale-110 transition-transform duration-300">S</div>
+              <span className="font-display text-xl font-bold text-white">{s.companyName ? <>{s.companyName.split(' ')[0]}<span className="text-primary-400">{' '}{s.companyName.split(' ').slice(1).join(' ')}</span></> : <>Shiv <span className="text-primary-400">Event Management</span></>}</span>
             </div>
             {s.tagline && <p className="text-gray-400 text-sm leading-relaxed max-w-xs">{s.tagline}</p>}
             {s.ownerName && <p className="text-gray-400 text-sm mt-2">Owner: <span className="font-semibold text-primary-400">{s.ownerName}</span></p>}

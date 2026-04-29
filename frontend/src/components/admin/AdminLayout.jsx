@@ -33,7 +33,7 @@ export default function AdminLayout() {
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">E</div>
-          <span className="font-display text-lg font-bold text-gray-900">Event<span className="gradient-text">Pro</span></span>
+          <span className="font-display text-lg font-bold text-gray-900"> Shiv <span className="text-primary-400"></span>Event Management<span className="gradient-text"></span></span>
         </div>
         <p className="text-gray-400 text-xs mt-1 ml-10">Admin Panel</p>
       </div>

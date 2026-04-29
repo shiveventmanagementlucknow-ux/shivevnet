@@ -67,7 +67,7 @@ export default function AdminLogin() {
                 E
               </div>
               <span className="font-display text-2xl font-bold text-gray-900">
-                Event<span className="gradient-text">Pro</span>
+                Shiv Event<span className="gradient-text"> Management</span>
               </span>
             </a>
             <p className="text-gray-500 text-sm mt-1">Admin Dashboard</p>

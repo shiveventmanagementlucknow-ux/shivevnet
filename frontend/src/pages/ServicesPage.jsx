@@ -72,11 +72,11 @@ export function ServicesPage() {
                     </div>
 
                     {loading ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '2rem' }}>
                             {[...Array(6)].map((_, i) => <div key={i} className="skeleton" style={{ height: '360px' }} />)}
                         </div>
                     ) : services.length > 0 ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '2rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))', gap: '2rem' }}>
                             {services.map((s, idx) => (
                                 <Link key={s._id} to={`/services/${s.slug}`} className="svc-card fade-up" style={{ animationDelay: `${(idx % 3) * 0.1}s` }}>
                                     {s.image ? (

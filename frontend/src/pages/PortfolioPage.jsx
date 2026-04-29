@@ -190,31 +190,33 @@ export function PortfolioPage() {
             {/* Lightbox */}
             {lightbox && (
                 <div className="lightbox-backdrop" onClick={closeLightbox}>
-                    <div className="lightbox-content" style={{ position: 'relative', maxWidth: '900px', width: '100%', maxHeight: '90vh' }} onClick={e => e.stopPropagation()}>
-                        {checkIsVideo(lightbox) ? (
-                            <video src={lightbox.imageUrl} controls autoPlay style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', background: 'black', display: 'block' }} />
-                        ) : (
-                            <img src={lightbox.imageUrl} alt={lightbox.title}
-                                style={{ width: '100%', maxHeight: '70vh', objectFit: 'contain', display: 'block', background: '#111' }}
-                                onError={e => { e.target.src = 'https://placehold.co/800x600/111/444?text=Image+Unavailable'; }} />
-                        )}
+                    <div className="lightbox-content" style={{ position: 'relative', maxWidth: '900px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', background: 'var(--ink-soft)', borderRadius: '8px', overflow: 'hidden' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ flex: '1 1 auto', minHeight: 0, position: 'relative', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {checkIsVideo(lightbox) ? (
+                                <video src={lightbox.imageUrl} controls autoPlay style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                            ) : (
+                                <img src={lightbox.imageUrl} alt={lightbox.title}
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    onError={e => { e.target.src = 'https://placehold.co/800x600/111/444?text=Image+Unavailable'; }} />
+                            )}
+                        </div>
 
                         {/* Details bar */}
-                        <div style={{ background: 'var(--ink-soft)', padding: '1.5rem 2rem', borderTop: '1px solid rgba(201,168,76,0.15)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '1rem' }}>
+                        <div style={{ flexShrink: 0, padding: 'clamp(1rem, 3vw, 1.5rem)', borderTop: '1px solid rgba(201,168,76,0.15)', overflowY: 'auto', maxHeight: '30vh' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
                                 <div>
-                                    <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '1.5rem', color: 'white', fontWeight: 400, marginBottom: '0.5rem' }}>{lightbox.title}</h2>
+                                    <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: 'white', fontWeight: 400, marginBottom: '0.5rem' }}>{lightbox.title}</h2>
                                     <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-                                        <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.3)', padding: '0.3rem 0.75rem' }}>
+                                        <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.3)', padding: '0.3rem 0.6rem', borderRadius: '3px' }}>
                                             {lightbox.category}
                                         </span>
                                         {lightbox.isFeatured && <span style={{ fontFamily: 'Outfit', fontSize: '0.6rem', color: 'var(--gold-light)', letterSpacing: '0.1em' }}>★ Featured Event</span>}
                                     </div>
-                                    {lightbox.description && <p style={{ fontFamily: 'Outfit', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.75rem', fontWeight: 300, lineHeight: 1.6 }}>{lightbox.description}</p>}
+                                    {lightbox.description && <p style={{ fontFamily: 'Outfit', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.75rem', fontWeight: 300, lineHeight: 1.6 }}>{lightbox.description}</p>}
                                 </div>
-                                <button onClick={closeLightbox} style={{ background: 'none', border: '1px solid rgba(201,168,76,0.3)', color: 'rgba(255,255,255,0.5)', width: '36px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: '1rem', transition: 'all 0.3s' }}
+                                <button onClick={closeLightbox} style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', color: 'var(--gold)', width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, fontSize: '0.85rem', transition: 'all 0.3s' }}
                                     onMouseEnter={e => { e.target.style.color = 'var(--gold)'; e.target.style.borderColor = 'var(--gold)'; }}
-                                    onMouseLeave={e => { e.target.style.color = 'rgba(255,255,255,0.5)'; e.target.style.borderColor = 'rgba(201,168,76,0.3)'; }}>
+                                    onMouseLeave={e => { e.target.style.color = 'var(--gold)'; e.target.style.borderColor = 'rgba(201,168,76,0.3)'; }}>
                                     ✕
                                 </button>
                             </div>
@@ -225,9 +227,9 @@ export function PortfolioPage() {
                             const idx = filtered.findIndex(img => img._id === lightbox._id);
                             return (
                                 <>
-                                    <button className="nav-btn prev" onClick={e => { e.stopPropagation(); goToPrevious(); }} disabled={idx === 0}>←</button>
-                                    <button className="nav-btn next" onClick={e => { e.stopPropagation(); goToNext(); }} disabled={idx === filtered.length - 1}>→</button>
-                                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(13,10,11,0.7)', color: 'var(--gold)', fontFamily: 'Outfit', fontSize: '0.7rem', letterSpacing: '0.1em', padding: '0.4rem 0.75rem', backdropFilter: 'blur(4px)' }}>
+                                    <button className="nav-btn prev" style={{ zIndex: 10 }} onClick={e => { e.stopPropagation(); goToPrevious(); }} disabled={idx === 0}>←</button>
+                                    <button className="nav-btn next" style={{ zIndex: 10 }} onClick={e => { e.stopPropagation(); goToNext(); }} disabled={idx === filtered.length - 1}>→</button>
+                                    <div style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'rgba(13,10,11,0.7)', color: 'var(--gold)', fontFamily: 'Outfit', fontSize: '0.7rem', letterSpacing: '0.1em', padding: '0.4rem 0.75rem', backdropFilter: 'blur(4px)', zIndex: 10, borderRadius: '4px' }}>
                                         {idx + 1} / {filtered.length}
                                     </div>
                                 </>
