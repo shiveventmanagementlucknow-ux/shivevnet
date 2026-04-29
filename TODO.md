@@ -1,36 +1,17 @@
-# Public Pages Refactor ✅ COMPLETE!
+# Smooth Scrolling & UI Lag Fix - Progress Tracker
 
-All 7 pages successfully moved from publicPages.jsx to individual files with proper imports/exports.
+## Completed Steps
+- [ ] 1. Create TODO.md ✅
 
-## Files Updated [7/7 ✅]
-- ✅ ServicesPage.jsx
-- ✅ ServiceDetailPage.jsx
-- ✅ PortfolioPage.jsx  
-- ✅ ContactPage.jsx
-- ✅ PricingPage.jsx
-- ✅ BlogPage.jsx
-- ✅ BlogDetailPage.jsx
-- ✅ publicPages.jsx DELETED
+## Completed Steps ✅
+- [x] 1. Create TODO.md
+- [x] 2. Read WhatsAppButton.jsx
+- [x] 3. Update index.css (global GPU accel, reduced-motion, faster anims)
+- [x] 4. Update Navbar.jsx (RAF throttled scroll)
+- [x] 5. HomePage.jsx (durations 500-1000ms→200-300ms, lazy imgs, will-change)
+- [x] 6. Footer.jsx (lighter hovers)
+- [x] 7. WhatsAppButton.jsx (scale 110→105, duration 300→200ms)
 
-## Verified:
-- App.jsx routing unchanged & correct
-- No duplicates
-- Bug-free imports (react, react-router-dom, helmet, DOMPurify, api services, contexts)
-- Navbar/Footer consistent
+## Final Steps
+- [ ] 8. Test & Complete
 
-**To test locally:**
-```
-cd frontend
-npm run dev
-```
-
-Visit:
-- `/services`
-- `/services/[slug]` 
-- `/portfolio`
-- `/contact`
-- `/pricing`
-- `/blog`
-- `/blog/[slug]`
-
-All pages now fully independent! 🚀

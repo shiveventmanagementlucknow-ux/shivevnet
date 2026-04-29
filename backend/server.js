@@ -104,7 +104,11 @@ app.use('/api/auth', adminAuthLimiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// ── Health Check ──────────────────────────────────────────────────────────────
+// ── Health Check & Root Route ─────────────────────────────────────────────────
+app.get('/', (req, res) => {
+  res.json({ success: true, message: '✅ Shiv Event Management API is Running', version: '1.0.0', timestamp: new Date().toISOString() });
+});
+
 app.get('/health', (req, res) => {
   res.json({ success: true, message: 'Shiv Event Management API is running', timestamp: new Date().toISOString() });
 });
