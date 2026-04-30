@@ -70,7 +70,7 @@ const blogSchema = new mongoose.Schema(
 );
 
 // ── Indexes ────────────────────────────────────────────────────────────────────
-blogSchema.index({ slug: 1 });
+
 blogSchema.index({ isPublished: 1, createdAt: -1 });
 blogSchema.index({ category: 1, isPublished: 1 });
 
