@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
@@ -88,6 +88,7 @@ export default function HomePage() {
   const [portfolio, setPortfolio] = useState([]);
   const [loadingP, setLoadingP] = useState(true);
   const { settings } = useSettings();
+  const { pathname } = useLocation();
   const heroOffset = useParallax(0.2);
 
   const slides = settings?.heroSlides?.length > 0 ? settings.heroSlides : [];
@@ -125,6 +126,48 @@ export default function HomePage() {
     const t = setInterval(() => setActiveT(c => (c + 1) % testimonials.length), 5000);
     return () => clearInterval(t);
   }, [testimonials.length]);
+
+  const siteUrl = 'https://shiveventlucknow.in';
+  const pageUrl = `${siteUrl}${pathname}`;
+  const companyName = settings?.companyName || 'Shiv Event Management';
+  const metaTitle = settings?.metaTitle || `${companyName} – Luxury Events`;
+  const metaDescription = settings?.metaDescription || "India's most trusted luxury event management company.";
+  const ogImage = slides[0]?.image || `${siteUrl}/og-image.jpg`;
+
+  const organizationSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    'name': companyName,
+    'url': siteUrl,
+    'logo': `${siteUrl}/logo.png`,
+    'contactPoint': {
+      '@type': 'ContactPoint',
+      'telephone': settings?.phone,
+      'contactType': 'customer service',
+    },
+    'sameAs': [
+      settings?.socialLinks?.instagram,
+      settings?.socialLinks?.facebook,
+      settings?.socialLinks?.twitter,
+      settings?.socialLinks?.youtube,
+    ].filter(Boolean),
+  };
+
+  const websiteSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    'url': siteUrl,
+    'name': companyName,
+    'potentialAction': {
+      '@type': 'SearchAction',
+      'target': {
+        '@type': 'EntryPoint',
+        'urlTemplate': `${siteUrl}/search?q={search_term_string}`
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
 
   return (
     <>
@@ -293,8 +336,25 @@ export default function HomePage() {
 
       <CursorGlow />
       <Helmet>
-        <title>{settings?.metaTitle || 'Shiv Event Management – Luxury Events'}</title>
-        <meta name="description" content={settings?.metaDescription || "India's most trusted luxury event management company."} />
+        <title>{metaTitle}</title>
+        <meta name="description" content={metaDescription} />
+        <link rel="canonical" href={pageUrl} />
+        {/* Open Graph */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:title" content={metaTitle} />
+        <meta property="og:description" content={metaDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:site_name" content={companyName} />
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={pageUrl} />
+        <meta name="twitter:title" content={metaTitle} />
+        <meta name="twitter:description" content={metaDescription} />
+        <meta name="twitter:image" content={ogImage} />
+        {/* JSON-LD Schema */}
+        <script type="application/ld+json">{JSON.stringify(organizationSchema)}</script>
+        <script type="application/ld+json">{JSON.stringify(websiteSchema)}</script>
       </Helmet>
       <Navbar />
 
@@ -364,7 +424,7 @@ export default function HomePage() {
             <Link to="/booking" className="btn-gold">Book Your Event →</Link>
             <Link to="/portfolio" className="btn-outline-light">View Portfolio</Link>
             <a
-              href="https://wa.me/916394352002" target="_blank" rel="noopener noreferrer"
+              href="https://wa.me/916394352002?text=Hi!%20I%20would%20like%20to%20know%20more%20about%20your%20event%20management%20services." target="_blank" rel="noopener noreferrer"
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.9rem 2.2rem',
@@ -628,7 +688,7 @@ export default function HomePage() {
 
           <div className="cta-btns" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem', justifyContent: 'center', alignItems: 'center' }}>
             <Link to="/booking" className="btn-gold">🎉 Book Your Event</Link>
-            <a href="https://wa.me/916394352002" target="_blank" rel="noopener noreferrer" className="btn-outline-dark">
+            <a href="https://wa.me/916394352002?text=Hi!%20I%20would%20like%20to%20know%20more%20about%20your%20event%20management%20services." target="_blank" rel="noopener noreferrer" className="btn-outline-dark">
               📱 +91 63943 52002
             </a>
             <Link to="/contact" className="btn-outline-dark">Contact Us</Link>

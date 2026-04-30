@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
@@ -75,6 +76,7 @@ export function PortfolioPage() {
     const [loading, setLoading] = useState(true);
     const [activeCategory, setActiveCategory] = useState('All');
     const [lightbox, setLightbox] = useState(null);
+    const { pathname } = useLocation();
 
     useEffect(() => {
         galleryAPI.getAll()
@@ -110,10 +112,37 @@ export function PortfolioPage() {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [lightbox, goToPrevious, goToNext, closeLightbox]);
 
+    const siteUrl = 'https://shiveventlucknow.in';
+    const pageUrl = `${siteUrl}${pathname}`;
+    const metaTitle = 'Portfolio – Shiv Event Management';
+    const metaDescription = 'Browse our gallery of memories. A showcase of our finest work in luxury weddings, corporate events, and bespoke celebrations.';
+    const ogImage = images[0]?.imageUrl || `${siteUrl}/og-portfolio.jpg`;
+
+    const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': [
+            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': siteUrl },
+            { '@type': 'ListItem', 'position': 2, 'name': 'Portfolio', 'item': pageUrl },
+        ],
+    };
+
     return (
         <>
             <style>{STYLES}</style>
-            <Helmet><title>Portfolio – Shiv Event Management</title></Helmet>
+            <Helmet>
+                <title>{metaTitle}</title>
+                <meta name="description" content={metaDescription} />
+                <link rel="canonical" href={pageUrl} />
+                {/* Open Graph */}
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={pageUrl} />
+                <meta property="og:title" content={metaTitle} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:image" content={ogImage} />
+                {/* JSON-LD Schema */}
+                <script type="application/ld+json">{JSON.stringify(breadcrumbSchema)}</script>
+            </Helmet>
             <Navbar />
             <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 1.5rem' }}>

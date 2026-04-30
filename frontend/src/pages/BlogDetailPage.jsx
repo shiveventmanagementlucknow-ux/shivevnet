@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import DOMPurify from 'dompurify';
 import Navbar from '../components/common/Navbar';
@@ -34,6 +34,7 @@ export function BlogDetailPage() {
     const { slug } = useParams();
     const [blog, setBlog] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { pathname } = useLocation();
 
     useEffect(() => {
         blogAPI.getOne(slug)
@@ -41,6 +42,49 @@ export function BlogDetailPage() {
             .catch(() => setBlog(null))
             .finally(() => setLoading(false));
     }, [slug]);
+
+    if (blog) {
+        const siteUrl = 'https://shiveventlucknow.in';
+        const pageUrl = `${siteUrl}${pathname}`;
+
+        const breadcrumbSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': siteUrl },
+                { '@type': 'ListItem', 'position': 2, 'name': 'Blog', 'item': `${siteUrl}/blog` },
+                { '@type': 'ListItem', 'position': 3, 'name': blog.title, 'item': pageUrl },
+            ],
+        };
+
+        const articleSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            'mainEntityOfPage': {
+                '@type': 'WebPage',
+                '@id': pageUrl,
+            },
+            'headline': blog.title,
+            'description': blog.metaDescription || blog.excerpt || blog.title,
+            'image': blog.image,
+            'author': {
+                '@type': 'Organization',
+                'name': blog.author || 'Shiv Event Management',
+            },
+            'publisher': {
+                '@type': 'Organization',
+                'name': 'Shiv Event Management',
+                'logo': {
+                    '@type': 'ImageObject',
+                    'url': `${siteUrl}/logo.png`,
+                },
+            },
+            'datePublished': blog.createdAt,
+            'dateModified': blog.updatedAt || blog.createdAt,
+        };
+
+        blog.schemas = { breadcrumbSchema, articleSchema };
+    }
 
     if (loading) return (
         <>
@@ -75,6 +119,21 @@ export function BlogDetailPage() {
             <Helmet>
                 <title>{blog.title} – Shiv Event Management Blog</title>
                 <meta name="description" content={blog.metaDescription || blog.excerpt || blog.title} />
+                <link rel="canonical" href={`https://shiveventlucknow.in${pathname}`} />
+                {/* Open Graph */}
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content={`https://shiveventlucknow.in${pathname}`} />
+                <meta property="og:title" content={blog.title} />
+                <meta property="og:description" content={blog.metaDescription || blog.excerpt || blog.title} />
+                <meta property="og:image" content={blog.image} />
+                {/* Twitter */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={blog.title} />
+                <meta name="twitter:description" content={blog.metaDescription || blog.excerpt || blog.title} />
+                <meta name="twitter:image" content={blog.image} />
+                {/* JSON-LD Schema */}
+                <script type="application/ld+json">{JSON.stringify(blog.schemas.breadcrumbSchema)}</script>
+                <script type="application/ld+json">{JSON.stringify(blog.schemas.articleSchema)}</script>
             </Helmet>
             <Navbar />
             <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>

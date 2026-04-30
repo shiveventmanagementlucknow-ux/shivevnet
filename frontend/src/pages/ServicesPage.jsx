@@ -2,11 +2,12 @@
 // ServicesPage.jsx
 // ─────────────────────────────────────────────────────────────────────────────
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { serviceAPI } from '../services/api';
+import { useSettings } from '../context/SettingsContext';
 
 const SHARED_STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
@@ -45,6 +46,8 @@ const SHARED_STYLES = `
 export function ServicesPage() {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { settings } = useSettings();
+    const { pathname } = useLocation();
 
     useEffect(() => {
         serviceAPI.getAll()
@@ -53,10 +56,50 @@ export function ServicesPage() {
             .finally(() => setLoading(false));
     }, []);
 
+    const siteUrl = 'https://shiveventlucknow.in';
+    const pageUrl = `${siteUrl}${pathname}`;
+    const metaTitle = 'Our Services – Shiv Event Management';
+    const metaDescription = 'Explore our wide range of bespoke event management services, from luxury weddings to corporate events. Crafted with passion and precision for unforgettable celebrations.';
+    const ogImage = `${siteUrl}/og-services.jpg`;
+
+    const itemListSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        'name': 'Event Services',
+        'description': 'A list of event management services offered by Shiv Event Management.',
+        'itemListElement': services.map((service, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            'item': {
+                '@type': 'Service',
+                'name': service.title,
+                'url': `${siteUrl}/services/${service.slug}`,
+                'description': service.shortDescription,
+                'image': service.image,
+                'provider': {
+                    '@type': 'Organization',
+                    'name': 'Shiv Event Management',
+                },
+            },
+        })),
+    };
+
     return (
         <>
             <style>{SHARED_STYLES}</style>
-            <Helmet><title>Our Services – Shiv Event Management</title></Helmet>
+            <Helmet>
+                <title>{metaTitle}</title>
+                <meta name="description" content={metaDescription} />
+                <link rel="canonical" href={pageUrl} />
+                <meta property="og:type" content="website" />
+                <meta property="og:url" content={pageUrl} />
+                <meta property="og:title" content={metaTitle} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:image" content={ogImage} />
+                {!loading && services.length > 0 && (
+                    <script type="application/ld+json">{JSON.stringify(itemListSchema)}</script>
+                )}
+            </Helmet>
             <Navbar />
             <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>
                 <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 1.5rem' }}>
@@ -137,7 +180,7 @@ export function ServicesPage() {
                             </p>
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center' }}>
                                 <Link to="/contact" className="gold-btn">Get in Touch</Link>
-                                <a href="https://wa.me/916394352002" target="_blank" rel="noopener noreferrer" className="outline-btn">📱 +91 63943 52002</a>
+                                <a href="https://wa.me/916394352002?text=Hi!%20I%20would%20like%20to%20know%20more%20about%20your%20event%20management%20services." target="_blank" rel="noopener noreferrer" className="outline-btn">📱 +91 63943 52002</a>
                             </div>
                         </div>
                     </div>

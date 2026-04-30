@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import Navbar from '../components/common/Navbar';
 import Footer from '../components/common/Footer';
 import { serviceAPI } from '../services/api';
+import { useSettings } from '../context/SettingsContext';
 
 const STYLES = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600&display=swap');
@@ -42,6 +43,8 @@ export function ServiceDetailPage() {
     const { slug } = useParams();
     const [service, setService] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { settings } = useSettings();
+    const { pathname } = useLocation();
 
     useEffect(() => {
         serviceAPI.getOne(slug)
@@ -49,6 +52,50 @@ export function ServiceDetailPage() {
             .catch(() => setService(null))
             .finally(() => setLoading(false));
     }, [slug]);
+
+    if (service) {
+        const siteUrl = 'https://shiveventlucknow.in';
+        const pageUrl = `${siteUrl}${pathname}`;
+
+        const breadcrumbSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            'itemListElement': [
+                { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': siteUrl },
+                { '@type': 'ListItem', 'position': 2, 'name': 'Services', 'item': `${siteUrl}/services` },
+                { '@type': 'ListItem', 'position': 3, 'name': service.title, 'item': pageUrl },
+            ],
+        };
+
+        const serviceSchema = {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            'name': service.title,
+            'description': service.description,
+            'image': service.image,
+            'provider': {
+                '@type': 'Organization',
+                'name': 'Shiv Event Management',
+                'url': siteUrl,
+            },
+            'serviceType': service.category || 'Event Planning',
+            ...(service.startingPrice && {
+                'offers': {
+                    '@type': 'Offer',
+                    'priceCurrency': 'INR',
+                    'price': service.startingPrice,
+                    'priceSpecification': {
+                        '@type': 'PriceSpecification',
+                        'price': service.startingPrice,
+                        'priceCurrency': 'INR',
+                        'valueAddedTaxIncluded': false,
+                    },
+                },
+            }),
+        };
+
+        service.schemas = { breadcrumbSchema, serviceSchema };
+    }
 
     if (loading) return (
         <>
@@ -79,7 +126,25 @@ export function ServiceDetailPage() {
     return (
         <>
             <style>{STYLES}</style>
-            <Helmet><title>{service.title} – Shiv Event Management</title></Helmet>
+            <Helmet>
+                <title>{`${service.title} – Shiv Event Management`}</title>
+                <meta name="description" content={service.description.substring(0, 160)} />
+                <link rel="canonical" href={`https://shiveventlucknow.in${pathname}`} />
+                {/* Open Graph */}
+                <meta property="og:type" content="article" />
+                <meta property="og:url" content={`https://shiveventlucknow.in${pathname}`} />
+                <meta property="og:title" content={`${service.title} – Shiv Event Management`} />
+                <meta property="og:description" content={service.description.substring(0, 160)} />
+                <meta property="og:image" content={service.image} />
+                {/* Twitter */}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={`${service.title} – Shiv Event Management`} />
+                <meta name="twitter:description" content={service.description.substring(0, 160)} />
+                <meta name="twitter:image" content={service.image} />
+                {/* JSON-LD Schema */}
+                <script type="application/ld+json">{JSON.stringify(service.schemas.breadcrumbSchema)}</script>
+                <script type="application/ld+json">{JSON.stringify(service.schemas.serviceSchema)}</script>
+            </Helmet>
             <Navbar />
             <div style={{ minHeight: '100vh', background: 'var(--ivory)', paddingTop: '7rem', paddingBottom: '5rem' }}>
                 <div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 1.5rem' }}>

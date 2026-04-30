@@ -64,7 +64,7 @@ export default function AdminLogin() {
           <div className="text-center mb-8">
             <a href="/" className="inline-flex items-center gap-2 mb-2 group">
               <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-lg group-hover:scale-105 transition-transform">
-                E
+                S
               </div>
               <span className="font-display text-2xl font-bold text-gray-900">
                 Shiv Event<span className="gradient-text"> Management</span>
@@ -88,7 +88,7 @@ export default function AdminLogin() {
                   autoComplete="email"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  placeholder="admin@Shiv Event Management.com"
+                  placeholder="admin@shiveventlucknow.in"
                   className="input-field"
                   disabled={loading}
                 />
