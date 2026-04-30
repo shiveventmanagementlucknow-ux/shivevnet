@@ -191,9 +191,19 @@ export const sendBookingStatusUpdate = async (booking) => {
 
 // ==================== PASSWORD RESET EMAIL ====================
 
-export const sendPasswordResetEmail = async (email, resetUrl, name) => {
+export const sendPasswordResetEmail = async (email, otp, name) => {
+  // MOCK LOG FOR CONSOLE DEBUGGING
+  console.log('\n=============================================');
+  console.log(`📩 EMAIL INTERCEPTED FOR DEBUGGING`);
+  console.log(`👤 To: ${email} (${name})`);
+  console.log(`🔑 OTP CODE: ${otp}`);
+  console.log('=============================================\n');
+
   const r = getResend();
-  if (!r) return;
+  if (!r) {
+    console.log('⚠️ RESEND_API_KEY not found. Skipping actual email delivery.');
+    return;
+  }
 
   try {
     await r.emails.send({
@@ -203,16 +213,14 @@ export const sendPasswordResetEmail = async (email, resetUrl, name) => {
       html: layout('Reset Your Password', `
         <h2 style="color:#1a1a2e;margin:0 0 16px;">Password Reset Request 🔐</h2>
         <p style="color:#4b5563;line-height:1.6;">Hi <strong>${name}</strong>,</p>
-        <p style="color:#4b5563;line-height:1.6;">We received a request to reset your password. Click the button below to create a new password. <strong>This link expires in 15 minutes.</strong></p>
+        <p style="color:#4b5563;line-height:1.6;">We received a request to reset your password. Use the OTP code below to verify your request and create a new password.</p>
         <div style="text-align:center;margin:32px 0;">
-          <a href="${resetUrl}" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;padding:16px 48px;border-radius:10px;text-decoration:none;font-weight:600;font-size:16px;">🔑 Reset Password</a>
+          <div style="display:inline-block;background:#f3f4f6;color:#111827;padding:16px 40px;border-radius:12px;font-weight:700;font-size:32px;letter-spacing:10px;border:2px dashed #d1d5db;">${otp}</div>
         </div>
-        <p style="color:#4b5563;margin-top:24px;font-size:14px;">Or copy this link:</p>
-        <p style="background:#f9fafb;padding:12px;border-radius:8px;color:#6366f1;word-break:break-all;font-size:12px;font-family:monospace;margin:8px 0;">${resetUrl}</p>
         <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px;border-radius:0 8px 8px 0;margin:24px 0;">
-          <p style="margin:0;color:#92400e;font-size:13px;font-weight:600;">⚠️ If you didn't request this, ignore this email. Your password won't change unless you click the link.</p>
+          <p style="margin:0;color:#92400e;font-size:13px;font-weight:600;">⚠️ If you didn't request this, ignore this email. Your password won't change unless you verify this OTP.</p>
         </div>
-        <p style="color:#4b5563;font-size:13px;margin-top:16px;">For security reasons, this link will expire in <strong>15 minutes</strong>.</p>`),
+        <p style="color:#4b5563;font-size:13px;margin-top:16px;">For security reasons, this OTP will expire in <strong>15 minutes</strong>.</p>`),
     });
   } catch (err) { console.error('Resend password reset email failed:', err.message); }
 };

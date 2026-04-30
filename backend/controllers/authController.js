@@ -295,23 +295,30 @@ export const forgotPassword = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Email is required' });
     }
 
+    console.log(`\n➡️ [API HIT] Forgot Password request received for: ${email}`);
+
     const genericResponse = {
       success: true,
-      message: 'If an admin account exists with this email, a reset link has been sent.',
+      message: 'If an account exists with this email, an OTP has been sent.',
     };
 
     const user = await User.findOne({ email: email.toLowerCase().trim() });
-    if (!user) return res.status(200).json(genericResponse);
+    if (!user) {
+      console.log(`⚠️ [DEBUG] User not found for email: ${email}. Silently returning success for security.`);
+      return res.status(200).json(genericResponse);
+    }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.resetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetToken = crypto.createHash('sha256').update(otp).digest('hex');
     user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
     await user.save();
 
-    const resetUrl = `${process.env.FRONTEND_URL}/admin/reset-password/${resetToken}`;
+    const resetData = otp;
+
+    console.log(`\n🚨 [DEBUG] Forgot Password requested for ${email}. OTP is: ${otp}\n`);
 
     try {
-      await sendPasswordResetEmail(user.email, resetUrl, user.name);
+      await sendPasswordResetEmail(user.email, resetData, user.name);
       console.log(`✅ Password reset email sent to ${user.email}`);
     } catch (emailError) {
       console.error('Email send error:', emailError.message);
@@ -331,8 +338,12 @@ export const forgotPassword = async (req, res, next) => {
 // ── @route   POST /api/auth/reset-password/:token
 export const resetPassword = async (req, res, next) => {
   try {
-    const { token } = req.params;
+    const otp = req.body.otp || req.params.token;
     const { newPassword, confirmPassword } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ success: false, message: 'OTP is required' });
+    }
 
     if (!newPassword || !confirmPassword) {
       return res.status(400).json({ success: false, message: 'Both password fields are required' });
@@ -344,7 +355,7 @@ export const resetPassword = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 8 characters' });
     }
 
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedToken = crypto.createHash('sha256').update(otp).digest('hex');
 
     const user = await User.findOne({
       resetToken: hashedToken,
@@ -352,7 +363,7 @@ export const resetPassword = async (req, res, next) => {
     }).select('+resetToken +resetTokenExpiry +tokenVersion');
 
     if (!user) {
-      return res.status(400).json({ success: false, message: 'Invalid or expired reset link. Please request a new one.' });
+      return res.status(400).json({ success: false, message: 'Invalid or expired OTP. Please request a new one.' });
     }
 
     // Rotate tokenVersion → all existing sessions invalidated
