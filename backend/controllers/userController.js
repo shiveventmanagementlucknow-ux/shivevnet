@@ -1,6 +1,11 @@
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { ClientUser } from '../models/index.js';
-import { sendWelcomeEmail } from '../services/emailService.js';
+import { sendWelcomeEmail, sendPasswordResetEmail, sendAccountVerificationEmail } from '../services/emailService.js';
+
+// In-memory store for pending registrations. For production, use Redis.
+const pendingRegistrations = new Map();
+const PENDING_REGISTRATION_TTL = 15 * 60 * 1000; // 15 minutes
 
 const generateToken = (id) => {
     return jwt.sign({ id, type: 'user' }, process.env.JWT_SECRET, {
@@ -13,14 +18,67 @@ const generateToken = (id) => {
 export const registerUser = async (req, res, next) => {
     try {
         const { name, email, password, phone, city } = req.body;
+        const normalizedEmail = email.toLowerCase().trim();
 
-        const existingUser = await ClientUser.findOne({ email });
+        const existingUser = await ClientUser.findOne({ email: normalizedEmail });
         if (existingUser) {
             return res.status(400).json({ success: false, message: 'An account with this email already exists' });
         }
 
-        const user = await ClientUser.create({ name, email, password, phone, city });
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiry = Date.now() + PENDING_REGISTRATION_TTL;
+
+        // Store pending registration data
+        pendingRegistrations.set(normalizedEmail, {
+            userData: { name, email: normalizedEmail, password, phone, city },
+            otp,
+            expiry,
+        });
+
+        // Auto-delete from map after TTL
+        setTimeout(() => {
+            if (pendingRegistrations.get(normalizedEmail)?.otp === otp) {
+                pendingRegistrations.delete(normalizedEmail);
+                console.log(`Cleared expired pending registration for: ${normalizedEmail}`);
+            }
+        }, PENDING_REGISTRATION_TTL);
+
+        await sendAccountVerificationEmail(normalizedEmail, otp, name);
+
+        res.status(200).json({
+            success: true,
+            message: 'Verification code sent to your email. Please check your inbox.',
+            data: { email: normalizedEmail }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Verify user email with OTP and create account
+// @route   POST /api/users/verify
+export const verifyEmail = async (req, res, next) => {
+    try {
+        const { email, otp } = req.body;
+        const normalizedEmail = email.toLowerCase().trim();
+
+        const pending = pendingRegistrations.get(normalizedEmail);
+
+        if (!pending || pending.expiry < Date.now()) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired OTP. Please try registering again.' });
+        }
+
+        if (pending.otp !== otp) {
+            return res.status(400).json({ success: false, message: 'Incorrect OTP.' });
+        }
+
+        // OTP is correct, create user
+        const { userData } = pending;
+        const user = await ClientUser.create(userData);
         const token = generateToken(user._id);
+
+        // Clean up
+        pendingRegistrations.delete(normalizedEmail);
 
         sendWelcomeEmail(user).catch(err => console.error('Welcome email failed:', err.message));
 
@@ -32,7 +90,11 @@ export const registerUser = async (req, res, next) => {
                 user: { id: user._id, name: user.name, email: user.email, phone: user.phone, city: user.city, avatar: user.avatar }
             }
         });
+
     } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
+        }
         next(error);
     }
 };
@@ -128,6 +190,77 @@ export const changeUserPassword = async (req, res, next) => {
         await user.save();
 
         res.json({ success: true, message: 'Password updated successfully' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Forgot user password
+// @route   POST /api/users/forgot-password
+export const forgotUserPassword = async (req, res, next) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+
+        const user = await ClientUser.findOne({ email: email.toLowerCase().trim() });
+        if (!user) {
+            // Silently return success to prevent email enumeration
+            return res.status(200).json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.resetToken = crypto.createHash('sha256').update(otp).digest('hex');
+        user.resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
+        await user.save();
+
+        try {
+            // Pass 'user' type to customize email content
+            await sendPasswordResetEmail(user.email, otp, user.name, 'user');
+            return res.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+        } catch (emailError) {
+            console.error('Email send error:', emailError.message);
+            user.resetToken = undefined;
+            user.resetTokenExpiry = undefined;
+            await user.save();
+            return res.status(500).json({ success: false, message: 'Failed to send reset email. Please try again.' });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
+// @desc    Reset user password
+// @route   POST /api/users/reset-password/:token
+export const resetUserPassword = async (req, res, next) => {
+    try {
+        const otp = req.body.otp || req.params.token;
+        const { newPassword, confirmPassword } = req.body;
+
+        if (!otp || !newPassword || !confirmPassword) {
+            return res.status(400).json({ success: false, message: 'Reset token/OTP and both passwords are required' });
+        }
+        if (newPassword !== confirmPassword) {
+            return res.status(400).json({ success: false, message: 'Passwords do not match' });
+        }
+
+        const hashedToken = crypto.createHash('sha256').update(otp).digest('hex');
+        const user = await ClientUser.findOne({
+            resetToken: hashedToken,
+            resetTokenExpiry: { $gt: new Date() }
+        }).select('+resetToken +resetTokenExpiry');
+
+        if (!user) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired reset link/OTP.' });
+        }
+
+        user.password = newPassword;
+        user.resetToken = undefined;
+        user.resetTokenExpiry = undefined;
+        await user.save();
+
+        return res.json({ success: true, message: 'Password reset successfully. You can now login.' });
     } catch (error) {
         next(error);
     }

@@ -266,6 +266,20 @@ export default function LoginPage() {
                                 >{showPassword ? '🙈' : '👁'}</button>
                             </div>
 
+                            <div className="fade-up d3" style={{ textAlign: 'right', marginTop: '-1rem' }}>
+                                <Link to="/forgot-password" style={{
+                                    fontFamily: 'Outfit',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--gold-dark)',
+                                    textDecoration: 'none',
+                                    fontWeight: 500,
+                                    borderBottom: '1px solid transparent',
+                                    transition: 'border-color 0.3s',
+                                }}>
+                                    Forgot Password?
+                                </Link>
+                            </div>
+
                             <div className="fade-up d3">
                                 <button type="submit" disabled={loading} className="login-btn">
                                     {loading ? (

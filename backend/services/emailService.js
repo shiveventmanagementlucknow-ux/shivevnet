@@ -152,6 +152,40 @@ export const sendWelcomeEmail = async (user) => {
   } catch (err) { console.error('Resend welcome email failed:', err.message); }
 };
 
+// ==================== ACCOUNT VERIFICATION EMAIL ====================
+
+export const sendAccountVerificationEmail = async (email, otp, name) => {
+  // MOCK LOG FOR CONSOLE DEBUGGING
+  console.log('\n=============================================');
+  console.log(`📩 EMAIL INTERCEPTED FOR DEBUGGING (Account Verification)`);
+  console.log(`👤 To: ${email} (${name})`);
+  console.log(`🔑 OTP CODE: ${otp}`);
+  console.log('=============================================\n');
+
+  const r = getResend();
+  if (!r) {
+    console.log('⚠️ RESEND_API_KEY not found. Skipping actual email delivery.');
+    return;
+  }
+
+  try {
+    await r.emails.send({
+      from: FROM_EMAIL(),
+      to: [email],
+      subject: `Verify Your Email for ${COMPANY()}`,
+      html: layout('Verify Your Email', `
+        <h2 style="color:#1a1a2e;margin:0 0 16px;">Welcome to ${COMPANY()}! 🎊</h2>
+        <p style="color:#4b5563;line-height:1.6;">Hi <strong>${name}</strong>,</p>
+        <p style="color:#4b5563;line-height:1.6;">Thanks for signing up. Please use the code below to verify your email address and complete your registration.</p>
+        <div style="text-align:center;margin:32px 0;">
+          <div style="display:inline-block;background:#f3f4f6;color:#111827;padding:16px 40px;border-radius:12px;font-weight:700;font-size:32px;letter-spacing:10px;border:2px dashed #d1d5db;">${otp}</div>
+        </div>
+        <p style="color:#4b5563;font-size:13px;margin-top:16px;">This OTP will expire in <strong>15 minutes</strong>.</p>
+        <p style="color:#4b5563;font-size:13px;">If you did not sign up for an account, you can safely ignore this email.</p>`),
+    });
+  } catch (err) { console.error('Resend account verification email failed:', err.message); }
+};
+
 // ==================== BOOKING STATUS UPDATE EMAIL ====================
 
 export const sendBookingStatusUpdate = async (booking) => {
@@ -191,7 +225,7 @@ export const sendBookingStatusUpdate = async (booking) => {
 
 // ==================== PASSWORD RESET EMAIL ====================
 
-export const sendPasswordResetEmail = async (email, otp, name) => {
+export const sendPasswordResetEmail = async (email, otp, name, type = 'admin') => {
   // MOCK LOG FOR CONSOLE DEBUGGING
   console.log('\n=============================================');
   console.log(`📩 EMAIL INTERCEPTED FOR DEBUGGING`);
@@ -205,16 +239,26 @@ export const sendPasswordResetEmail = async (email, otp, name) => {
     return;
   }
 
+  const resetLink = type === 'admin'
+    ? `${FRONTEND()}/admin/reset-password/${otp}`
+    : `${FRONTEND()}/reset-password/${otp}`;
+
+  const subjectTitle = type === 'admin' ? `Admin` : `Account`;
+
   try {
     await r.emails.send({
       from: FROM_EMAIL(),
       to: [email],
-      subject: `Password Reset Request – ${COMPANY()} Admin`,
+      subject: `Password Reset Request – ${COMPANY()} ${subjectTitle}`,
       html: layout('Reset Your Password', `
         <h2 style="color:#1a1a2e;margin:0 0 16px;">Password Reset Request 🔐</h2>
         <p style="color:#4b5563;line-height:1.6;">Hi <strong>${name}</strong>,</p>
-        <p style="color:#4b5563;line-height:1.6;">We received a request to reset your password. Use the OTP code below to verify your request and create a new password.</p>
+        <p style="color:#4b5563;line-height:1.6;">We received a request to reset your password. You can click the link below to reset it, or use the OTP code manually.</p>
+        <div style="text-align:center;margin:24px 0;">
+          <a href="${resetLink}" style="display:inline-block;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#ffffff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:600;">Reset Password</a>
+        </div>
         <div style="text-align:center;margin:32px 0;">
+          <p style="color:#4b5563;font-size:14px;margin-bottom:12px;">Or enter this OTP manually:</p>
           <div style="display:inline-block;background:#f3f4f6;color:#111827;padding:16px 40px;border-radius:12px;font-weight:700;font-size:32px;letter-spacing:10px;border:2px dashed #d1d5db;">${otp}</div>
         </div>
         <div style="background:#fef3c7;border-left:4px solid #f59e0b;padding:12px;border-radius:0 8px 8px 0;margin:24px 0;">

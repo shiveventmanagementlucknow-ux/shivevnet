@@ -41,6 +41,8 @@ const clientUserSchema = new mongoose.Schema(
             type: Boolean,
             default: true,
         },
+        resetToken: String,
+        resetTokenExpiry: Date,
     },
     {
         timestamps: true,

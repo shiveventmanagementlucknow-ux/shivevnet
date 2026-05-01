@@ -1,7 +1,8 @@
 import express from 'express';
 import {
     registerUser, loginUser, getUserProfile, updateUserProfile, changeUserPassword,
-    getAllUsersAdmin, getUserStatsAdmin, getUserAdmin, toggleUserAdmin, deleteUserAdmin
+    getAllUsersAdmin, getUserStatsAdmin, getUserAdmin, toggleUserAdmin, deleteUserAdmin,
+    forgotUserPassword, resetUserPassword, verifyEmail
 } from '../controllers/userController.js';
 import { protect, adminOnly, userProtect } from '../middlewares/authMiddleware.js';
 import { userRegisterValidation, userLoginValidation } from '../middlewares/validationMiddleware.js';
@@ -10,7 +11,10 @@ const router = express.Router();
 
 // Public user auth
 router.post('/register', userRegisterValidation, registerUser);
+router.post('/verify', verifyEmail);
 router.post('/login', userLoginValidation, loginUser);
+router.post('/forgot-password', forgotUserPassword);
+router.post('/reset-password/:token', resetUserPassword);
 
 // Authenticated user routes
 router.get('/me', userProtect, getUserProfile);

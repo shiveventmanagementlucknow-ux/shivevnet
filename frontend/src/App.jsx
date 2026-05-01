@@ -17,6 +17,9 @@ const BlogDetailPage = lazy(() => import("./pages/BlogDetailPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const UserForgotPassword = lazy(() => import("./pages/UserForgotPassword"));
+const UserResetPassword = lazy(() => import("./pages/UserResetPassword"));
+const VerifyEmailPage = lazy(() => import("./pages/VerifyEmailPage"));
 
 // Admin (lazy)
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
@@ -107,6 +110,9 @@ export default function App() {
             {/* Auth */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
+            <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/forgot-password" element={<UserForgotPassword />} />
+            <Route path="/reset-password/:token" element={<UserResetPassword />} />
 
             {/* User */}
             <Route path="/profile" element={

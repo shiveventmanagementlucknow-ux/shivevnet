@@ -48,9 +48,9 @@ export default function SignupPage() {
         if (form.password !== form.confirmPassword) return toast.error('Passwords do not match');
         setLoading(true);
         try {
-            const user = await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, city: form.city });
-            toast.success(`Welcome, ${user.name}!`);
-            navigate('/');
+            await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, city: form.city });
+            toast.success('Verification code sent! Check your email.');
+            navigate('/verify-email', { state: { email: form.email } });
         } catch (err) {
             toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally { setLoading(false); }
