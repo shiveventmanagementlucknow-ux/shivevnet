@@ -25,18 +25,42 @@ const VerifyEmailPage = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (loading) return; // Prevent double submit
+
         if (!otp || otp.length !== 6) {
             return toast.error('Please enter a valid 6-digit OTP.');
         }
         setLoading(true);
+
+        let verifiedData = null;
+
         try {
             const res = await api.post('/users/verify', { email, otp });
-            const { token, user } = res.data.data;
-            completeRegistration(token, user);
-            toast.success(`Welcome, ${user.name}! Your account is verified.`);
-            navigate('/profile');
+            verifiedData = res.data.data;
         } catch (err) {
             toast.error(err.response?.data?.message || 'Verification failed. Please try again.');
+            setLoading(false);
+            return; // Stop here if API fails
+        }
+
+        // If API succeeded, safely handle context setup to prevent page crash
+        try {
+            const { token, user } = verifiedData;
+            if (typeof completeRegistration === 'function') {
+                await completeRegistration(token, user);
+            } else {
+                // Fallback if context function is missing
+                localStorage.setItem('token', token);
+                localStorage.setItem('user', JSON.stringify(user));
+                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            }
+            toast.success(`Welcome, ${user.name}! Your account is verified.`);
+            navigate('/profile');
+        } catch (contextErr) {
+            console.error("Context Error during registration:", contextErr);
+            toast.success(`Welcome, ${verifiedData?.user?.name || 'User'}! Account created.`);
+            // Harsh fallback: reload page to profile to reset state
+            setTimeout(() => window.location.href = '/profile', 1000);
         } finally {
             setLoading(false);
         }
@@ -54,6 +78,8 @@ const VerifyEmailPage = () => {
                 }
                 .login-input::placeholder { color: rgba(13,10,11,0.35); }
                 .login-input:focus { border-bottom-color: var(--gold); }
+                .otp-input { text-align: center; font-size: 1.5rem; letter-spacing: 0.5em; }
+                .otp-input::placeholder { font-size: 1rem; letter-spacing: normal; }
                 .login-btn {
                     width: 100%; background: var(--ink); color: var(--gold); border: 1px solid var(--ink);
                     padding: 1rem 2rem; font-family: 'Outfit', sans-serif; font-size: 0.75rem; font-weight: 500;
@@ -84,7 +110,7 @@ const VerifyEmailPage = () => {
                     <form onSubmit={handleSubmit} className="fade-up" style={{ animationDelay: '0.1s' }}>
                         <div>
                             <label style={{ display: 'block', fontFamily: 'Outfit', fontSize: '0.65rem', letterSpacing: '0.2em', textTransform: 'uppercase', color: 'rgba(13,10,11,0.5)', marginBottom: '0.5rem', fontWeight: 500 }}>Verification Code *</label>
-                            <input type="text" required value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" className="login-input" style={{ textAlign: 'center', fontSize: '1.5rem', letterSpacing: '0.5em' }} maxLength={6} />
+                            <input type="text" required value={otp} onChange={e => setOtp(e.target.value)} placeholder="Enter 6-digit OTP" className="login-input otp-input" maxLength={6} />
                         </div>
 
                         <button type="submit" disabled={loading} className="login-btn">

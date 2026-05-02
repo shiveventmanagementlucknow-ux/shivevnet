@@ -72,13 +72,12 @@ export const verifyEmail = async (req, res, next) => {
             return res.status(400).json({ success: false, message: 'Incorrect OTP.' });
         }
 
-        // OTP is correct, create user
+        // OTP is correct, prevent double-click race conditions by removing immediately
         const { userData } = pending;
+        pendingRegistrations.delete(normalizedEmail);
+
         const user = await ClientUser.create(userData);
         const token = generateToken(user._id);
-
-        // Clean up
-        pendingRegistrations.delete(normalizedEmail);
 
         sendWelcomeEmail(user).catch(err => console.error('Welcome email failed:', err.message));
 
