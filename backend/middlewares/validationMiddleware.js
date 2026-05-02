@@ -58,8 +58,8 @@ export const userRegisterValidation = [
     .isEmail()
     .withMessage('Enter a valid email'), // normalizeEmail() removed
   body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-  body('phone').optional().trim(),
-  body('city').optional().trim(),
+  body('phone').trim().matches(/^\d{10}$/).withMessage('Mobile number must be exactly 10 digits'),
+  body('city').trim().notEmpty().withMessage('City is required'),
   handleValidationErrors
 ];
 

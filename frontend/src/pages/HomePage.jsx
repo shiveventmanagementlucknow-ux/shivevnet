@@ -139,7 +139,7 @@ export default function HomePage() {
     '@type': 'Organization',
     'name': companyName,
     'url': siteUrl,
-    'logo': `${siteUrl}/logo.png`,
+    'logo': `${siteUrl}/logo.svg`,
     'contactPoint': {
       '@type': 'ContactPoint',
       'telephone': settings?.phone,
@@ -339,6 +339,11 @@ export default function HomePage() {
         <title>{metaTitle}</title>
         <meta name="description" content={metaDescription} />
         <link rel="canonical" href={pageUrl} />
+        {/* Favicons for Google Search Results */}
+        <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/logo.svg" />
+        <link rel="apple-touch-icon" href="/logo.svg" />
+        <meta name="theme-color" content="#0D0A0B" />
         {/* Open Graph */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={pageUrl} />

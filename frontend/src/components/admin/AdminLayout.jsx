@@ -32,7 +32,7 @@ export default function AdminLayout() {
       {/* Brand */}
       <div className="px-6 py-5 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">E</div>
+          <img src="/logo.svg" alt="Shiv Events" className="w-8 h-8 rounded-lg shadow-sm" />
           <span className="font-display text-lg font-bold text-gray-900"> Shiv <span className="text-primary-400"></span>Event Management<span className="gradient-text"></span></span>
         </div>
         <p className="text-gray-400 text-xs mt-1 ml-10">Admin Panel</p>
@@ -78,26 +78,45 @@ export default function AdminLayout() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-[100dvh] bg-gray-50 flex relative overflow-x-hidden">
+      <style>{`
+        @keyframes slideIn {
+          from { transform: translateX(-100%); }
+          to { transform: translateX(0); }
+        }
+        .animate-slide-in {
+          animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        /* Universal Table Responsive Fix for Admin Mobile */
+        @media (max-width: 1024px) {
+          .admin-main table {
+            display: block;
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            white-space: nowrap;
+          }
+        }
+      `}</style>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-full z-30">
+      <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-gray-200 fixed h-[100dvh] z-30">
         <SidebarContent />
       </aside>
 
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 flex">
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSidebarOpen(false)} />
-          <aside className="relative w-64 bg-white border-r border-gray-200 flex flex-col z-50">
+        <div className="lg:hidden fixed inset-0 z-[100] flex">
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSidebarOpen(false)} />
+          <aside className="relative w-[280px] max-w-[80vw] bg-white border-r border-gray-200 flex flex-col z-[101] h-[100dvh] shadow-2xl animate-slide-in">
             <SidebarContent />
           </aside>
         </div>
       )}
 
       {/* Main content */}
-      <div className="flex-1 lg:ml-64 flex flex-col min-h-screen">
+      <div className="flex-1 lg:ml-64 flex flex-col min-h-[100dvh] min-w-0 w-full">
         {/* Top bar */}
-        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 md:px-8 h-16 flex items-center justify-between">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 md:px-6 lg:px-8 h-16 flex items-center justify-between shadow-sm">
           <button onClick={() => setSidebarOpen(true)} className="lg:hidden p-2 text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50">
             <div className="w-5 flex flex-col gap-1.5">
               <span className="block h-0.5 bg-current" />
@@ -114,7 +133,7 @@ export default function AdminLayout() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 p-4 md:p-8 overflow-auto">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 w-full max-w-full overflow-x-hidden admin-main">
           <Outlet />
         </main>
       </div>

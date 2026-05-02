@@ -46,6 +46,8 @@ export default function SignupPage() {
         e.preventDefault();
         if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
         if (form.password !== form.confirmPassword) return toast.error('Passwords do not match');
+        if (!/^\d{10}$/.test(form.phone)) return toast.error('Mobile number must be exactly 10 digits');
+        if (!form.city.trim()) return toast.error('City is required');
         setLoading(true);
         try {
             await register({ name: form.name, email: form.email, password: form.password, phone: form.phone, city: form.city });
@@ -116,14 +118,14 @@ export default function SignupPage() {
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '0' }}>
                                 <div className="field-wrap" style={{ marginBottom: '2rem' }}>
-                                    <label className="field-label">Phone</label>
-                                    <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                                        placeholder="9876543210" className="field-input" autoComplete="tel" />
+                                    <label className="field-label">Phone *</label>
+                                    <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value.replace(/[^0-9]/g, '') }))}
+                                        placeholder="9876543210" className="field-input" autoComplete="tel" required maxLength="10" minLength="10" />
                                 </div>
                                 <div className="field-wrap" style={{ marginBottom: '2rem' }}>
-                                    <label className="field-label">City</label>
+                                    <label className="field-label">City *</label>
                                     <input type="text" value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
-                                        placeholder="Mumbai" className="field-input" autoComplete="address-level2" />
+                                        placeholder="Mumbai" className="field-input" autoComplete="address-level2" required />
                                 </div>
                             </div>
 
