@@ -5,26 +5,31 @@
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
+
   <url>
     <loc>https://shiveventlucknow.in/services</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://shiveventlucknow.in/portfolio</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
+
   <url>
     <loc>https://shiveventlucknow.in/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+
   <url>
-    <loc>https://shiveventlucknow.in/contact</loc>
+    <loc>https://shiveeventlucknow.in/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
+
   <url>
     <loc>https://shiveventlucknow.in/booking</loc>
     <changefreq>monthly</changefreq>
